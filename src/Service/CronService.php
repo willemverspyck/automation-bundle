@@ -1,0 +1,153 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Spyck\AutomationBundle\Service;
+
+use Spyck\AutomationBundle\Cron\CronInterface;
+use Spyck\AutomationBundle\Entity\Cron;
+use Spyck\AutomationBundle\Exception\RetryException;
+use DateTime;
+use DateTimeInterface;
+use Exception;
+use Psr\Log\LoggerInterface;
+use Spyck\AutomationBundle\Repository\CronRepository;
+use Spyck\AutomationBundle\Utility\DateTimeUtility;
+use Symfony\Component\ErrorHandler\Error\OutOfMemoryError;
+use Throwable;
+
+class CronService
+{
+    private const ERROR = 10;
+
+    public function __construct(private readonly CronRepository $cronRepository, private readonly LoggerInterface $logger, private readonly MapService $mapService, private readonly ModuleService $moduleService)
+    {
+    }
+
+    /**
+     * Execute the cron.
+     */
+    public function executeCron(): void
+    {
+        $crons = $this->cronRepository->getCronDataByStatus(Cron::STATUS_PENDING);
+
+        if (count($crons) > 0) {
+            foreach ($crons as $cron) {
+                $date = new DateTime();
+                $dateInterval = $cron->getTimestamp()->diff($date);
+
+                if (0 === $dateInterval->invert && $dateInterval->days > 0) {
+                    $duration = $this->getDuration($cron->getTimestamp());
+
+                    $log = $cron->getLog();
+                    $log[] = sprintf('Timeout after %s', DateTimeUtility::getDurationAsText($cron->getTimestamp(), $date));
+
+                    $this->cronRepository->patchCron($cron, ['status', 'duration', 'log'], null, null, null, null, null, Cron::STATUS_ERROR, $duration, $log);
+                }
+            }
+
+            return;
+        }
+
+        $cron = $this->cronRepository->getCron();
+
+        if (null === $cron) {
+            return;
+        }
+
+        $timestamp = new DateTime();
+
+        $this->cronRepository->patchCron($cron, ['status', 'duration', 'log', 'timestamp'], null, null, null, null, null, Cron::STATUS_PENDING, null, null, null, $timestamp);
+
+        $fields = ['status', 'duration'];
+
+        $status = null;
+        $log = null;
+        $error = null;
+        $timestampAvailable = null;
+
+        try {
+            $moduleInstance = $this->moduleService->getModuleInstance($cron->getModule());
+
+            if ($moduleInstance instanceof CronInterface) {
+                $map = $this->mapService->getMap($cron->getParameters());
+
+                $moduleInstance->setAutomationCron($cron);
+                $moduleInstance->executeAutomationCron($cron->getCallback(), $map);
+            } else {
+                throw new Exception(sprintf('"%s" is no instance of CronInterface', get_class($moduleInstance)));
+            }
+
+            $fields = array_merge($fields, ['error', 'timestampAvailable']);
+
+            $status = Cron::STATUS_COMPLETE;
+        } catch (OutOfMemoryError $exception) {
+            dump('OUt of mememotyyyyy');
+        } catch (RetryException $exception) {
+            $fields = array_merge($fields, ['log', 'error', 'timestampAvailable']);
+
+            $log = $cron->getLog();
+            $log[] = $this->getLog($exception);
+
+            $error = null === $cron->getError() ? 1 : $cron->getError() + 1;
+
+            if ($error >= self::ERROR) {
+                $status = Cron::STATUS_ERROR;
+
+                $this->logger->error('Cron failed', [
+                    'module' => (string) $cron->getModule(),
+                    'callback' => $cron->getCallback(),
+                    'parameters' => $cron->getParameters(),
+                ]);
+            } else {
+                $timestampAvailable = new DateTime(sprintf('%d minutes', 15 * pow(2, $error - 1)));
+            }
+        } catch (Throwable $throwable) {
+            $fields = array_merge($fields, ['log']);
+
+            $status = Cron::STATUS_ERROR;
+            $log = $cron->getLog();
+            $log[] = $this->getLog($throwable);
+
+            foreach ($throwable->getTrace() as $trace) {
+                $function = array_key_exists('class', $trace) ? sprintf('%s->%s', $trace['class'], $trace['function']) : $trace['function'];
+                $arguments = array_key_exists('args', $trace) ? implode(', ', $trace['args']) : '';
+
+                $log[] = sprintf('%s (%s): %s(%s)', $trace['file'], $trace['line'], $function, $arguments);
+            }
+
+            $this->logger->error('Cron failed', [
+                'module' => (string) $cron->getModule(),
+                'callback' => $cron->getCallback(),
+                'parameters' => $cron->getParameters(),
+            ]);
+        }
+
+        $duration = $this->getDuration($cron->getTimestamp());
+
+        $this->cronRepository->patchCron($cron, $fields, null, null, null, null, null, $status, $duration, $log, $error, null, $timestampAvailable);
+    }
+
+    public function resetCron(Cron $cron, bool $check = false): void
+    {
+        if (false === $check || Cron::STATUS_ERROR === $cron->getStatus()) {
+            $this->cronRepository->patchCron($cron, ['status', 'duration', 'log', 'timestamp']);
+
+            foreach ($cron->getChildren() as $child) {
+                $this->resetCron($child);
+            }
+        }
+    }
+
+    private function getDuration(DateTimeInterface $dateTimeStart): int
+    {
+        $dateTimeEnd = new DateTime();
+
+        return $dateTimeEnd->getTimestamp() - $dateTimeStart->getTimestamp();
+    }
+
+    private function getLog(Throwable $throwable): string
+    {
+        return sprintf('%s (%s: %s)', $throwable->getMessage(), $throwable->getFile(), $throwable->getLine());
+    }
+}
