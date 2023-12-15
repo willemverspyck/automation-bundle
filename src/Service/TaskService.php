@@ -9,12 +9,12 @@ use Exception;
 use Psr\Log\LoggerInterface;
 use Spyck\AutomationBundle\Entity\ModuleInterface;
 use Spyck\AutomationBundle\Exception\ParameterException;
-use Spyck\AutomationBundle\TaskInterface;
+use Spyck\AutomationBundle\Task\TaskInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 readonly class TaskService
 {
-    public function __construct(private LoggerInterface $logger, private MapService $mapService, private ModuleRepository $moduleRepository, private ModuleService $moduleService, private ValidatorInterface $validator)
+    public function __construct(private JobService $jobService, private LoggerInterface $logger, private MapService $mapService, private ModuleRepository $moduleRepository, private ValidatorInterface $validator)
     {
         ini_set('memory_limit', '4G');
     }
@@ -43,10 +43,10 @@ readonly class TaskService
      */
     private function executeTask(ModuleInterface $module, array $parameters): void
     {
-        $moduleInstance = $this->moduleService->getModuleInstance($module);
+        $job = $this->jobService->getJobByModule($module);
 
-        if ($moduleInstance instanceof TaskInterface) {
-            $parameter = $this->mapService->getMap($parameters);
+        if ($job instanceof TaskInterface) {
+            $parameter = $this->mapService->getMap($parameters, $job->getAutomationTaskParameter());
 
             $constraintViolationList = $this->validator->validate($parameter);
             if ($constraintViolationList->count() > 0) {
@@ -55,11 +55,11 @@ readonly class TaskService
                 throw new ParameterException(sprintf('%s', $constraintViolation->getMessage()));
             }
 
-            $moduleInstance->executeAutomationTask($parameter);
+            $job->executeAutomationTask($parameter);
 
             return;
         }
 
-        throw new Exception(sprintf('"%s" is no instance of TaskInterface', get_class($moduleInstance)));
+        throw new Exception(sprintf('"%s" is no instance of TaskInterface', get_class($job)));
     }
 }

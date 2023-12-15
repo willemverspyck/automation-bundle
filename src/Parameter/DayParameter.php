@@ -5,7 +5,7 @@ namespace Spyck\AutomationBundle\Parameter;
 use DateTimeInterface;
 use Symfony\Component\Validator\Constraints as Validator;
 
-class DayParameterList implements ParameterListInterface
+final class DayParameter implements ParameterInterface
 {
     #[Validator\NotNull]
     #[Validator\Type(DateTimeInterface::class)]

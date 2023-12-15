@@ -4,14 +4,16 @@ namespace Spyck\AutomationBundle\Cron;
 
 use Exception;
 use Spyck\AutomationBundle\Entity\Cron;
-use Spyck\AutomationBundle\Parameter\ParameterListInterface;
+use Spyck\AutomationBundle\Parameter\ParameterInterface;
 
 interface CronInterface
 {
     /**
      * @throws Exception
      */
-    public function executeAutomationCron(string $callback, ParameterListInterface $parameter): void;
+    public function executeAutomationCron(string $callback, ParameterInterface $parameter): void;
+
+    public function getAutomationCronParameter(): string;
 
     public function getAutomationCronCallbacks(): iterable;
 

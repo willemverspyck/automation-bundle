@@ -2,7 +2,7 @@
 
 namespace Spyck\AutomationBundle\Parameter;
 
-interface ParameterListInterface
+interface ParameterInterface
 {
     public function getData(): array;
 }

@@ -20,7 +20,7 @@ class CronService
 {
     private const ERROR = 10;
 
-    public function __construct(private readonly CronRepository $cronRepository, private readonly LoggerInterface $logger, private readonly MapService $mapService, private readonly ModuleService $moduleService)
+    public function __construct(private readonly CronRepository $cronRepository, private readonly JobService $jobService, private readonly LoggerInterface $logger, private readonly MapService $mapService)
     {
     }
 
@@ -67,15 +67,15 @@ class CronService
         $timestampAvailable = null;
 
         try {
-            $moduleInstance = $this->moduleService->getModuleInstance($cron->getModule());
+            $job = $this->jobService->getJobByModule($cron->getModule());
 
-            if ($moduleInstance instanceof CronInterface) {
-                $map = $this->mapService->getMap($cron->getParameters());
+            if ($job instanceof CronInterface) {
+                $map = $this->mapService->getMap($cron->getParameters(), $job->getAutomationCronParameter());
 
-                $moduleInstance->setAutomationCron($cron);
-                $moduleInstance->executeAutomationCron($cron->getCallback(), $map);
+                $job->setAutomationCron($cron);
+                $job->executeAutomationCron($cron->getCallback(), $map);
             } else {
-                throw new Exception(sprintf('"%s" is no instance of CronInterface', get_class($moduleInstance)));
+                throw new Exception(sprintf('"%s" is no instance of CronInterface', get_class($job)));
             }
 
             $fields = array_merge($fields, ['error', 'timestampAvailable']);

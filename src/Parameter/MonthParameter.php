@@ -4,7 +4,7 @@ namespace Spyck\AutomationBundle\Parameter;
 
 use Symfony\Component\Validator\Constraints as Validator;
 
-class MonthParameterList implements ParameterListInterface
+final class MonthParameter implements ParameterInterface
 {
     #[Validator\NotNull]
     private int $year;

@@ -6,7 +6,7 @@ use App\Entity\Module;
 use Exception;
 use Spyck\AutomationBundle\Entity\Cron;
 use Spyck\AutomationBundle\Entity\ModuleInterface;
-use Spyck\AutomationBundle\Parameter\ParameterListInterface;
+use Spyck\AutomationBundle\Parameter\ParameterInterface;
 use Spyck\AutomationBundle\Repository\CronRepository;
 use Symfony\Contracts\Service\Attribute\Required;
 
@@ -34,7 +34,7 @@ trait CronTrait
     /**
      * @throws Exception
      */
-    protected function putAutomationCron(ModuleInterface $module, ParameterListInterface $parameters, int $priority = 1): void
+    protected function putAutomationCron(ModuleInterface $module, ParameterInterface $parameters, int $priority = 1): void
     {
         $parent = null;
 
