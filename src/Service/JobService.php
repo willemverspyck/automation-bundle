@@ -28,7 +28,7 @@ readonly class JobService
         $adapter = $module->getAdapter();
 
         $job = $this->getJob($adapter);
-        $job->setModule($module);
+        $job->setAutomationModule($module);
 
         return $job;
     }

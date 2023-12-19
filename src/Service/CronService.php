@@ -32,19 +32,7 @@ class CronService
         $crons = $this->cronRepository->getCronDataByStatus(Cron::STATUS_PENDING);
 
         if (count($crons) > 0) {
-            foreach ($crons as $cron) {
-                $date = new DateTime();
-                $dateInterval = $cron->getTimestamp()->diff($date);
-
-                if (0 === $dateInterval->invert && $dateInterval->days > 0) {
-                    $duration = $this->getDuration($cron->getTimestamp());
-
-                    $log = $cron->getLog();
-                    $log[] = sprintf('Timeout after %s', DateTimeUtility::getDurationAsText($cron->getTimestamp(), $date));
-
-                    $this->cronRepository->patchCron($cron, ['status', 'duration', 'log'], null, null, null, null, null, Cron::STATUS_ERROR, $duration, $log);
-                }
-            }
+            $this->resetCronAfterTimeout($crons);
 
             return;
         }
@@ -57,7 +45,7 @@ class CronService
 
         $timestamp = new DateTime();
 
-        $this->cronRepository->patchCron($cron, ['status', 'duration', 'log', 'timestamp'], null, null, null, null, null, Cron::STATUS_PENDING, null, null, null, $timestamp);
+        $this->cronRepository->patchCron(cron: $cron, fields: ['status', 'duration', 'log', 'timestamp'], status: Cron::STATUS_PENDING, timestamp: $timestamp);
 
         $fields = ['status', 'duration'];
 
@@ -81,8 +69,6 @@ class CronService
             $fields = array_merge($fields, ['error', 'timestampAvailable']);
 
             $status = Cron::STATUS_COMPLETE;
-        } catch (OutOfMemoryError $exception) {
-            dump('OUt of mememotyyyyy');
         } catch (RetryException $exception) {
             $fields = array_merge($fields, ['log', 'error', 'timestampAvailable']);
 
@@ -123,6 +109,8 @@ class CronService
             ]);
         }
 
+        $cron = $job->getAutomationCron();
+
         $duration = $this->getDuration($cron->getTimestamp());
 
         $this->cronRepository->patchCron($cron, $fields, null, null, null, null, null, $status, $duration, $log, $error, null, $timestampAvailable);
@@ -135,6 +123,26 @@ class CronService
 
             foreach ($cron->getChildren() as $child) {
                 $this->resetCron($child);
+            }
+        }
+    }
+
+    /**
+     * @param array<int, Cron> $crons
+     */
+    public function resetCronAfterTimeout(array $crons): void
+    {
+        foreach ($crons as $cron) {
+            $date = new DateTime();
+            $dateInterval = $cron->getTimestamp()->diff($date);
+
+            if (0 === $dateInterval->invert && $dateInterval->days > 0) {
+                $duration = $this->getDuration($cron->getTimestamp());
+
+                $log = $cron->getLog();
+                $log[] = sprintf('Timeout after %s', DateTimeUtility::getDurationAsText($cron->getTimestamp(), $date));
+
+                $this->cronRepository->patchCron($cron, ['status', 'duration', 'log'], null, null, null, null, null, Cron::STATUS_ERROR, $duration, $log);
             }
         }
     }

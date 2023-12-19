@@ -9,7 +9,7 @@ use Spyck\AutomationBundle\Entity\ModuleInterface;
 #[Autoconfigure(tags: ['spyck.automation.job'])]
 interface JobInterface
 {
-    public function getModule(): ModuleInterface;
+    public function getAutomationModule(): ModuleInterface;
 
-    public function setModule(ModuleInterface $module): void;
+    public function setAutomationModule(ModuleInterface $module): void;
 }

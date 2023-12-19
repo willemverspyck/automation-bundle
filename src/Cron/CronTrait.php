@@ -12,8 +12,8 @@ use Symfony\Contracts\Service\Attribute\Required;
 
 trait CronTrait
 {
-    private CronRepository $cronRepository;
     private Cron $cron;
+    private CronRepository $cronRepository;
 
     #[Required]
     public function setCronRepository(CronRepository $cronRepository): void
