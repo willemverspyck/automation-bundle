@@ -7,9 +7,14 @@ use Symfony\Component\Config\Definition\Configurator\DefinitionConfigurator;
 return static function (DefinitionConfigurator $definition) {
     $definition->rootNode()
         ->children()
-            ->arrayNode('user')
+            ->arrayNode('cron')
                 ->children()
-                    ->scalarNode('class')->isRequired()->end()
+                    ->integerNode('retry')
+                        ->defaultValue(10)
+                    ->end()
+                    ->integerNode('timeout')
+                        ->defaultValue(86400)
+                    ->end()
                 ->end()
             ->end()
         ->end();

@@ -20,6 +20,8 @@ final class SpyckAutomationBundle extends AbstractBundle
     {
         $container->import('../config/services.php');
 
-        $builder->setParameter('spyck.task.user.class', $config['user']['class']);
+        $builder->setParameter('spyck.automation.cron.retry', $config['cron']['retry']);
+
+        $builder->setParameter('spyck.automation.cron.timeout', $config['cron']['timeout']);
     }
 }

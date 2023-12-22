@@ -13,14 +13,13 @@ use Exception;
 use Psr\Log\LoggerInterface;
 use Spyck\AutomationBundle\Repository\CronRepository;
 use Spyck\AutomationBundle\Utility\DateTimeUtility;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\ErrorHandler\Error\OutOfMemoryError;
 use Throwable;
 
 class CronService
 {
-    private const ERROR = 10;
-
-    public function __construct(private readonly CronRepository $cronRepository, private readonly JobService $jobService, private readonly LoggerInterface $logger, private readonly MapService $mapService)
+    public function __construct(private readonly CronRepository $cronRepository, private readonly JobService $jobService, private readonly LoggerInterface $logger, private readonly MapService $mapService, #[Autowire(param: 'spyck.automation.cron.retry')] private readonly int $retry, #[Autowire(param: 'spyck.automation.cron.timeout')] private readonly int $timeout)
     {
     }
 
@@ -72,12 +71,11 @@ class CronService
         } catch (RetryException $exception) {
             $fields = array_merge($fields, ['log', 'error', 'timestampAvailable']);
 
-            $log = $cron->getLog();
-            $log[] = $this->getLog($exception);
+            $log = $this->getLog($exception, $cron->getLog());
 
             $error = null === $cron->getError() ? 1 : $cron->getError() + 1;
 
-            if ($error >= self::ERROR) {
+            if ($error >= $this->retry) {
                 $status = Cron::STATUS_ERROR;
 
                 $this->logger->error('Cron failed', [
@@ -92,15 +90,7 @@ class CronService
             $fields = array_merge($fields, ['log']);
 
             $status = Cron::STATUS_ERROR;
-            $log = $cron->getLog();
-            $log[] = $this->getLog($throwable);
-
-            foreach ($throwable->getTrace() as $trace) {
-                $function = array_key_exists('class', $trace) ? sprintf('%s->%s', $trace['class'], $trace['function']) : $trace['function'];
-                $arguments = array_key_exists('args', $trace) ? implode(', ', $trace['args']) : '';
-
-                $log[] = sprintf('%s (%s): %s(%s)', $trace['file'], $trace['line'], $function, $arguments);
-            }
+            $log = $this->getLog($throwable, $cron->getLog());
 
             $this->logger->error('Cron failed', [
                 'module' => (string) $cron->getModule(),
@@ -134,13 +124,13 @@ class CronService
     {
         foreach ($crons as $cron) {
             $date = new DateTime();
-            $dateInterval = $cron->getTimestamp()->diff($date);
+            $timestamp = $cron->getTimestamp();
 
-            if (0 === $dateInterval->invert && $dateInterval->days > 0) {
-                $duration = $this->getDuration($cron->getTimestamp());
+            if ($date->getTimestamp() - $timestamp->getTimestamp() > $this->timeout) {
+                $duration = $this->getDuration($timestamp);
 
                 $log = $cron->getLog();
-                $log[] = sprintf('Timeout after %s', DateTimeUtility::getDurationAsText($cron->getTimestamp(), $date));
+                $log[] = sprintf('Timeout after %s', DateTimeUtility::getDurationAsText($timestamp, $date));
 
                 $this->cronRepository->patchCron($cron, ['status', 'duration', 'log'], null, null, null, null, null, Cron::STATUS_ERROR, $duration, $log);
             }
@@ -154,8 +144,11 @@ class CronService
         return $dateTimeEnd->getTimestamp() - $dateTimeStart->getTimestamp();
     }
 
-    private function getLog(Throwable $throwable): string
+    private function getLog(Throwable $throwable): array
     {
-        return sprintf('%s (%s: %s)', $throwable->getMessage(), $throwable->getFile(), $throwable->getLine());
+        return [
+            sprintf('%s (%s: %s)', $throwable->getMessage(), $throwable->getFile(), $throwable->getLine()),
+            ...explode(PHP_EOL, $throwable->getTraceAsString()),
+        ];
     }
 }
