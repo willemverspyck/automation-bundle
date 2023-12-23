@@ -16,6 +16,7 @@ return static function (DefinitionConfigurator $definition) {
                         ->defaultValue(86400)
                     ->end()
                 ->end()
+                ->addDefaultsIfNotSet()
             ->end()
         ->end();
 };
