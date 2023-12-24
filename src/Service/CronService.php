@@ -53,9 +53,9 @@ class CronService
         $error = null;
         $timestampAvailable = null;
 
-        try {
-            $job = $this->jobService->getJobByModule($cron->getModule());
+        $job = $this->jobService->getJobByModule($cron->getModule());
 
+        try {
             if ($job instanceof CronInterface) {
                 $map = $this->mapService->getMap($cron->getParameters(), $job->getAutomationCronParameter());
 

@@ -17,5 +17,16 @@ return static function (DefinitionConfigurator $definition) {
                     ->end()
                 ->end()
             ->end()
+        ->end()
+        ->children()
+            ->arrayNode('module')
+                ->children()
+                    ->scalarNode('class')
+                        ->isRequired()
+                        ->cannotBeEmpty()
+                    ->end()
+                ->end()
+                ->isRequired()
+            ->end()
         ->end();
 };
