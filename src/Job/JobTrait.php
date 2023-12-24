@@ -1,16 +1,10 @@
 <?php
 
-namespace Spyck\AutomationBundle\Module;
+namespace Spyck\AutomationBundle\Job;
 
-use App\Entity\Module;
-use Exception;
-use Spyck\AutomationBundle\Entity\Cron;
 use Spyck\AutomationBundle\Entity\ModuleInterface;
-use Spyck\AutomationBundle\Parameter\ParameterInterface;
-use Spyck\AutomationBundle\Repository\CronRepository;
-use Symfony\Contracts\Service\Attribute\Required;
 
-trait ModuleTrait
+trait JobTrait
 {
     private ModuleInterface $module;
 

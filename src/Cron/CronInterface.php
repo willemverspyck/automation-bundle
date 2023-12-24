@@ -4,9 +4,10 @@ namespace Spyck\AutomationBundle\Cron;
 
 use Exception;
 use Spyck\AutomationBundle\Entity\Cron;
+use Spyck\AutomationBundle\Job\JobInterface;
 use Spyck\AutomationBundle\Parameter\ParameterInterface;
 
-interface CronInterface
+interface CronInterface extends JobInterface
 {
     /**
      * @throws Exception
