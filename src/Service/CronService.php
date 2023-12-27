@@ -19,7 +19,7 @@ use Throwable;
 
 class CronService
 {
-    public function __construct(private readonly CronRepository $cronRepository, private readonly JobService $jobService, private readonly LoggerInterface $logger, private readonly MapService $mapService, #[Autowire(param: 'spyck.automation.cron.retry')] private readonly int $retry, #[Autowire(param: 'spyck.automation.cron.timeout')] private readonly int $timeout)
+    public function __construct(private readonly CronRepository $cronRepository, private readonly JobService $jobService, private readonly LoggerInterface $logger, private readonly MapService $mapService, #[Autowire(param: 'spyck.automation.cron.retry.delay')] private readonly int $retryDelay, #[Autowire(param: 'spyck.automation.cron.retry.multiplier')] private readonly int $retryMultiplier, #[Autowire(param: 'spyck.automation.cron.retry.max')] private readonly int $retryMax, #[Autowire(param: 'spyck.automation.cron.timeout')] private readonly int $timeout)
     {
     }
 
@@ -56,14 +56,14 @@ class CronService
         $job = $this->jobService->getJobByModule($cron->getModule());
 
         try {
-            if ($job instanceof CronInterface) {
-                $map = $this->mapService->getMap($cron->getParameters(), $job->getAutomationCronParameter());
-
-                $job->setAutomationCron($cron);
-                $job->executeAutomationCron($cron->getCallback(), $map);
-            } else {
+            if (false === $job instanceof CronInterface) {
                 throw new Exception(sprintf('"%s" is no instance of CronInterface', get_class($job)));
             }
+
+            $map = $this->mapService->getMap($cron->getVariables(), $job->getAutomationCronParameter());
+
+            $job->setAutomationCron($cron);
+            $job->executeAutomationCron($cron->getCallback(), $map);
 
             $fields = array_merge($fields, ['error', 'timestampAvailable']);
 
@@ -75,7 +75,7 @@ class CronService
 
             $error = null === $cron->getError() ? 1 : $cron->getError() + 1;
 
-            if ($error >= $this->retry) {
+            if ($error >= $this->retryMax) {
                 $status = Cron::STATUS_ERROR;
 
                 $this->logger->error('Cron failed', [
@@ -84,7 +84,7 @@ class CronService
                     'parameters' => $cron->getParameters(),
                 ]);
             } else {
-                $timestampAvailable = new DateTime(sprintf('%d minutes', 15 * pow(2, $error - 1)));
+                $timestampAvailable = new DateTime(sprintf('%d seconds', pow($error, $this->retryMultiplier) * $this->retryDelay));
             }
         } catch (Throwable $throwable) {
             $fields = array_merge($fields, ['log']);
