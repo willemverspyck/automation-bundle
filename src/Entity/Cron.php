@@ -45,8 +45,8 @@ class Cron implements Stringable
     #[Doctrine\Column(name: 'callback', type: Types::STRING, length: 256)]
     private string $callback;
 
-    #[Doctrine\Column(name: 'parameters', type: Types::JSON)]
-    private array $parameters;
+    #[Doctrine\Column(name: 'variables', type: Types::JSON)]
+    private array $variables;
 
     #[Doctrine\Column(name: 'priority', type: Types::SMALLINT, options: ['unsigned' => true])]
     private int $priority;
@@ -140,14 +140,14 @@ class Cron implements Stringable
         return $this;
     }
 
-    public function getParameters(): array
+    public function getVariables(): array
     {
-        return $this->parameters;
+        return $this->variables;
     }
 
-    public function setParameters(array $parameters): self
+    public function setVariables(array $variables): self
     {
-        $this->parameters = $parameters;
+        $this->variables = $variables;
 
         return $this;
     }

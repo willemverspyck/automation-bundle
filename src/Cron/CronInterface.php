@@ -14,7 +14,7 @@ interface CronInterface extends JobInterface
      */
     public function executeAutomationCron(string $callback, ParameterInterface $parameter): void;
 
-    public function getAutomationCronParameter(): string;
+    public function getAutomationCronParameter(): ParameterInterface;
 
     public function getAutomationCronCallbacks(): iterable;
 

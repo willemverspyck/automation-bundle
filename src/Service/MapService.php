@@ -13,13 +13,13 @@ use Symfony\Component\Serializer\Serializer;
 
 readonly class MapService
 {
-    public function getMap(array $data, string $type): ParameterInterface
+    public function getMap(array $data, ParameterInterface $parameter): ParameterInterface
     {
         $serializer = new Serializer([
             new DateTimeNormalizer(),
             new ObjectNormalizer(propertyTypeExtractor: new ReflectionExtractor()),
         ]);
 
-        return $serializer->denormalize($data, $type);
+        return $serializer->denormalize($data, get_class($parameter));
     }
 }

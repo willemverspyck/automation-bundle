@@ -2,7 +2,7 @@
 
 namespace Spyck\AutomationBundle\Parameter;
 
-final class EmptyParameter implements ParameterInterface
+final class Parameter implements ParameterInterface
 {
     public function getData(): array
     {

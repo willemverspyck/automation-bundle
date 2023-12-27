@@ -81,7 +81,7 @@ class CronService
                 $this->logger->error('Cron failed', [
                     'module' => (string) $cron->getModule(),
                     'callback' => $cron->getCallback(),
-                    'parameters' => $cron->getParameters(),
+                    'variables' => $cron->getVariables(),
                 ]);
             } else {
                 $timestampAvailable = new DateTime(sprintf('%d seconds', pow($error, $this->retryMultiplier) * $this->retryDelay));
@@ -95,7 +95,7 @@ class CronService
             $this->logger->error('Cron failed', [
                 'module' => (string) $cron->getModule(),
                 'callback' => $cron->getCallback(),
-                'parameters' => $cron->getParameters(),
+                'variables' => $cron->getVariables(),
             ]);
         }
 

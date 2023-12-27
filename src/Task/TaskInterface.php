@@ -9,5 +9,5 @@ interface TaskInterface extends JobInterface
 {
     public function executeAutomationTask(ParameterInterface $parameter): void;
 
-    public function getAutomationTaskParameter(): string;
+    public function getAutomationTaskParameter(): ParameterInterface;
 }

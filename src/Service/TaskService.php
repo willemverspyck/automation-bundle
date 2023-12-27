@@ -22,44 +22,45 @@ readonly class TaskService
     /**
      * @throws Exception
      */
-    public function executeTaskByModuleId(int $moduleId, array $parameters = []): void
+    public function executeTaskByModuleId(int $moduleId, array $variables = []): void
     {
         $module = $this->moduleRepository->getModuleById($moduleId);
 
         if (null === $module) {
             $this->logger->error('Module not found', [
                 'moduleId' => $moduleId,
-                'parameters' => $parameters,
+                'variables' => $variables,
             ]);
 
             return;
         }
 
-        $this->executeTask($module, $parameters);
+        $this->executeTask($module, $variables);
     }
 
     /**
      * @throws Exception
      */
-    private function executeTask(ModuleInterface $module, array $parameters): void
+    private function executeTask(ModuleInterface $module, array $variables): void
     {
         $job = $this->jobService->getJobByModule($module);
 
-        if ($job instanceof TaskInterface) {
-            $parameter = $this->mapService->getMap($parameters, $job->getAutomationTaskParameter());
-
-            $constraintViolationList = $this->validator->validate($parameter);
-            if ($constraintViolationList->count() > 0) {
-                $constraintViolation = $constraintViolationList->offsetGet(0);
-
-                throw new ParameterException(sprintf('%s', $constraintViolation->getMessage()));
-            }
-
-            $job->executeAutomationTask($parameter);
-
-            return;
+        if (false === $job instanceof TaskInterface) {
+            throw new Exception(sprintf('"%s" is no instance of TaskInterface', get_class($job)));
         }
 
-        throw new Exception(sprintf('"%s" is no instance of TaskInterface', get_class($job)));
+        $parameter = $job->getAutomationTaskParameter();
+
+        $map = $this->mapService->getMap($variables, $parameter);
+
+        $constraintViolationList = $this->validator->validate($map);
+
+        if ($constraintViolationList->count() > 0) {
+            $constraintViolation = $constraintViolationList->offsetGet(0);
+
+            throw new ParameterException(sprintf('%s', $constraintViolation->getMessage()));
+        }
+
+        $job->executeAutomationTask($map);
     }
 }
