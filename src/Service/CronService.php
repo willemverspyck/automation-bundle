@@ -44,12 +44,12 @@ class CronService
 
         $timestamp = new DateTime();
 
-        $this->cronRepository->patchCron(cron: $cron, fields: ['status', 'duration', 'log', 'timestamp'], status: Cron::STATUS_PENDING, timestamp: $timestamp);
+        $this->cronRepository->patchCron(cron: $cron, fields: ['status', 'duration', 'messages', 'timestamp'], status: Cron::STATUS_PENDING, timestamp: $timestamp);
 
         $fields = ['status', 'duration'];
 
         $status = null;
-        $log = null;
+        $messages = null;
         $error = null;
         $timestampAvailable = null;
 
@@ -69,9 +69,9 @@ class CronService
 
             $status = Cron::STATUS_COMPLETE;
         } catch (RetryException $exception) {
-            $fields = array_merge($fields, ['log', 'error', 'timestampAvailable']);
+            $fields = array_merge($fields, ['messages', 'error', 'timestampAvailable']);
 
-            $log = $this->getLog($exception, $cron->getLog());
+            $messages = $this->getMessages($exception, $cron->getMessages());
 
             $error = null === $cron->getError() ? 1 : $cron->getError() + 1;
 
@@ -87,10 +87,10 @@ class CronService
                 $timestampAvailable = new DateTime(sprintf('%d seconds', pow($error, $this->retryMultiplier) * $this->retryDelay));
             }
         } catch (Throwable $throwable) {
-            $fields = array_merge($fields, ['log']);
+            $fields = array_merge($fields, ['messages']);
 
             $status = Cron::STATUS_ERROR;
-            $log = $this->getLog($throwable, $cron->getLog());
+            $messages = $this->getMessages($throwable, $cron->getMessages());
 
             $this->logger->error('Cron failed', [
                 'module' => (string) $cron->getModule(),
@@ -103,13 +103,13 @@ class CronService
 
         $duration = $this->getDuration($cron->getTimestamp());
 
-        $this->cronRepository->patchCron($cron, $fields, null, null, null, null, null, $status, $duration, $log, $error, null, $timestampAvailable);
+        $this->cronRepository->patchCron(cron: $cron, fields: $fields, status: $status, duration: $duration, messages: $messages, error: $error, timestampAvailable: $timestampAvailable);
     }
 
     public function resetCron(Cron $cron, bool $check = false): void
     {
         if (false === $check || Cron::STATUS_ERROR === $cron->getStatus()) {
-            $this->cronRepository->patchCron($cron, ['status', 'duration', 'log', 'timestamp']);
+            $this->cronRepository->patchCron(cron: $cron, fields: ['status', 'duration', 'messages', 'timestamp']);
 
             foreach ($cron->getChildren() as $child) {
                 $this->resetCron($child);
@@ -129,10 +129,10 @@ class CronService
             if ($date->getTimestamp() - $timestamp->getTimestamp() > $this->timeout) {
                 $duration = $this->getDuration($timestamp);
 
-                $log = $cron->getLog();
-                $log[] = sprintf('Timeout after %s', DateTimeUtility::getDurationAsText($timestamp, $date));
+                $messages = $cron->getMessages();
+                $messages[] = sprintf('Timeout after %s', DateTimeUtility::getDurationAsText($timestamp, $date));
 
-                $this->cronRepository->patchCron($cron, ['status', 'duration', 'log'], null, null, null, null, null, Cron::STATUS_ERROR, $duration, $log);
+                $this->cronRepository->patchCron(cron: $cron, fields: ['status', 'duration', 'messages'], status: Cron::STATUS_ERROR, duration: $duration, messages: $messages);
             }
         }
     }
@@ -144,7 +144,7 @@ class CronService
         return $dateTimeEnd->getTimestamp() - $dateTimeStart->getTimestamp();
     }
 
-    private function getLog(Throwable $throwable): array
+    private function getMessages(Throwable $throwable): array
     {
         return [
             sprintf('%s (%s: %s)', $throwable->getMessage(), $throwable->getFile(), $throwable->getLine()),

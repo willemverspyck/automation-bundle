@@ -57,8 +57,8 @@ class Cron implements Stringable
     #[Doctrine\Column(name: 'duration', type: Types::INTEGER, nullable: true)]
     private ?int $duration = null;
 
-    #[Doctrine\Column(name: 'log', type: Types::JSON, nullable: true)]
-    private ?array $log = null;
+    #[Doctrine\Column(name: 'messages', type: Types::JSON, nullable: true)]
+    private ?array $messages = null;
 
     #[Doctrine\Column(name: 'error', type: Types::SMALLINT, nullable: true)]
     private ?int $error = null;
@@ -188,14 +188,14 @@ class Cron implements Stringable
         return $this;
     }
 
-    public function getLog(): ?array
+    public function getMessages(): ?array
     {
-        return $this->log;
+        return $this->messages;
     }
 
-    public function setLog(?array $log): self
+    public function setMessages(?array $messages): self
     {
-        $this->log = $log;
+        $this->messages = $messages;
 
         return $this;
     }

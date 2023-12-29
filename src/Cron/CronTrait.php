@@ -34,16 +34,16 @@ trait CronTrait
     /**
      * @throws Exception
      */
-    protected function putAutomationCron(ModuleInterface $module, ParameterInterface $parameters, int $priority = 1): void
+    protected function putAutomationCron(ModuleInterface $module, ParameterInterface $parameter, int $priority = 1): void
     {
         $parent = null;
 
         $callbacks = $this->getAutomationCronCallbacks();
 
-        $parameters = $parameters->getData();
+        $variables = $parameter->getData();
 
         foreach ($callbacks as $callback) {
-            $parent = $this->cronRepository->putCron($parent, $module, $callback, $parameters, $priority);
+            $parent = $this->cronRepository->putCron(parent: $parent, module: $module, callback: $callback, variables: $variables, priority: $priority);
         }
     }
 }

@@ -65,13 +65,13 @@ class CronRepository extends ServiceEntityRepository
         ]);
     }
 
-    public function putCron(?Cron $parent, ModuleInterface $module, string $callback, array $parameters, int $priority = 1): Cron
+    public function putCron(?Cron $parent, ModuleInterface $module, string $callback, array $variables, int $priority = 1): Cron
     {
         $cron = new Cron();
         $cron->setParent($parent);
         $cron->setModule($module);
         $cron->setCallback($callback);
-        $cron->setParameters($parameters);
+        $cron->setVariables($variables);
         $cron->setPriority($priority);
 
         $this->getEntityManager()->persist($cron);
@@ -80,7 +80,7 @@ class CronRepository extends ServiceEntityRepository
         return $cron;
     }
 
-    public function patchCron(Cron $cron, array $fields, Cron $parent = null, ModuleInterface $module = null, string $callback = null, array $parameters = null, int $priority = null, string $status = null, int $duration = null, array $log = null, int $error = null, DateTimeInterface $timestamp = null, DateTimeInterface $timestampAvailable = null): void
+    public function patchCron(Cron $cron, array $fields, Cron $parent = null, ModuleInterface $module = null, string $callback = null, array $variables = null, int $priority = null, string $status = null, int $duration = null, array $messages = null, int $error = null, DateTimeInterface $timestamp = null, DateTimeInterface $timestampAvailable = null): void
     {
         if (in_array('parent', $fields)) {
             $cron->setParent($parent);
@@ -98,10 +98,10 @@ class CronRepository extends ServiceEntityRepository
             $cron->setCallback($callback);
         }
 
-        if (in_array('parameters', $fields)) {
-            DataUtility::assert(null !== $parameters);
+        if (in_array('variables', $fields)) {
+            DataUtility::assert(null !== $variables);
 
-            $cron->setParameters($parameters);
+            $cron->setVariables($variables);
         }
 
         if (in_array('priority', $fields)) {
@@ -118,8 +118,8 @@ class CronRepository extends ServiceEntityRepository
             $cron->setDuration($duration);
         }
 
-        if (in_array('log', $fields)) {
-            $cron->setLog($log);
+        if (in_array('messages', $fields)) {
+            $cron->setMessages($messages);
         }
 
         if (in_array('error', $fields)) {
