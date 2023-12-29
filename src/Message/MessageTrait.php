@@ -3,6 +3,7 @@
 namespace Spyck\AutomationBundle\Message;
 
 use Exception;
+use Spyck\AutomationBundle\Entity\ModuleInterface;
 use Spyck\AutomationBundle\Job\JobInterface;
 use Spyck\AutomationBundle\Parameter\ParameterInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -18,10 +19,10 @@ trait MessageTrait
         $this->messageBus = $messageBus;
     }
 
-    public function putAutomationMessage(ParameterInterface $parameter, array $stamps = []): void
+    public function putAutomationMessage(ModuleInterface $module, ParameterInterface $parameter, array $stamps = []): void
     {
         $moduleMessage = new ModuleMessage();
-        $moduleMessage->setModule($this->getAutomationModule());
+        $moduleMessage->setModule($module);
         $moduleMessage->setParameter($parameter);
 
         $this->messageBus->dispatch($moduleMessage, $stamps);
