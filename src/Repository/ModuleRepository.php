@@ -15,7 +15,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 class ModuleRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $managerRegistry, #[Autowire(param: 'spyck.automation.module.class')] private readonly string $class)
+    public function __construct(ManagerRegistry $managerRegistry, #[Autowire(param: 'spyck.automation.config.module.class')] private readonly string $class)
     {
         parent::__construct($managerRegistry, $this->class);
     }

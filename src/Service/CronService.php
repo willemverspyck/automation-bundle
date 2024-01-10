@@ -19,7 +19,7 @@ use Throwable;
 
 class CronService
 {
-    public function __construct(private readonly CronRepository $cronRepository, private readonly JobService $jobService, private readonly LoggerInterface $logger, private readonly MapService $mapService, #[Autowire(param: 'spyck.automation.cron.retry.delay')] private readonly int $retryDelay, #[Autowire(param: 'spyck.automation.cron.retry.multiplier')] private readonly int $retryMultiplier, #[Autowire(param: 'spyck.automation.cron.retry.max')] private readonly int $retryMax, #[Autowire(param: 'spyck.automation.cron.timeout')] private readonly int $timeout)
+    public function __construct(private readonly CronRepository $cronRepository, private readonly JobService $jobService, private readonly LoggerInterface $logger, private readonly MapService $mapService, #[Autowire(param: 'spyck.automation.config.cron.retry.delay')] private readonly int $retryDelay, #[Autowire(param: 'spyck.automation.config.cron.retry.multiplier')] private readonly int $retryMultiplier, #[Autowire(param: 'spyck.automation.config.cron.retry.max')] private readonly int $retryMax, #[Autowire(param: 'spyck.automation.config.cron.timeout')] private readonly int $timeout)
     {
     }
 

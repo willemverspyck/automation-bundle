@@ -20,11 +20,11 @@ final class SpyckAutomationBundle extends AbstractBundle
     {
         $container->import('../config/services.php');
 
-        $builder->setParameter('spyck.automation.cron.retry.delay', $config['cron']['retry']['delay']);
-        $builder->setParameter('spyck.automation.cron.retry.multiplier', $config['cron']['retry']['multiplier']);
-        $builder->setParameter('spyck.automation.cron.retry.max', $config['cron']['retry']['max']);
-        $builder->setParameter('spyck.automation.cron.timeout', $config['cron']['timeout']);
+        $builder->setParameter('spyck.automation.config.cron.retry.delay', $config['cron']['retry']['delay']);
+        $builder->setParameter('spyck.automation.config.cron.retry.multiplier', $config['cron']['retry']['multiplier']);
+        $builder->setParameter('spyck.automation.config.cron.retry.max', $config['cron']['retry']['max']);
+        $builder->setParameter('spyck.automation.config.cron.timeout', $config['cron']['timeout']);
 
-        $builder->setParameter('spyck.automation.module.class', $config['module']['class']);
+        $builder->setParameter('spyck.automation.config.module.class', $config['module']['class']);
     }
 }
