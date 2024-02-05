@@ -8,13 +8,16 @@ use App\Repository\ModuleRepository;
 use Exception;
 use Psr\Log\LoggerInterface;
 use Spyck\AutomationBundle\Entity\ModuleInterface;
+use Spyck\AutomationBundle\Event\PostTaskEvent;
+use Spyck\AutomationBundle\Event\PreTaskEvent;
 use Spyck\AutomationBundle\Exception\ParameterException;
 use Spyck\AutomationBundle\Task\TaskInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 readonly class TaskService
 {
-    public function __construct(private JobService $jobService, private LoggerInterface $logger, private MapService $mapService, private ModuleRepository $moduleRepository, private ValidatorInterface $validator)
+    public function __construct(private EventDispatcherInterface $eventDispatcher, private JobService $jobService, private LoggerInterface $logger, private MapService $mapService, private ModuleRepository $moduleRepository, private ValidatorInterface $validator)
     {
         ini_set('memory_limit', '4G');
     }
@@ -61,6 +64,14 @@ readonly class TaskService
             throw new ParameterException(sprintf('%s', $constraintViolation->getMessage()));
         }
 
+        $preCronEvent = new PreTaskEvent($job, $map);
+
+        $this->eventDispatcher->dispatch($preCronEvent);
+
         $job->executeAutomationTask($map);
+
+        $postCronEvent = new PostTaskEvent($job, $map);
+
+        $this->eventDispatcher->dispatch($postCronEvent);
     }
 }

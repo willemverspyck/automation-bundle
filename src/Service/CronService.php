@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Spyck\AutomationBundle\Service;
 
+use Doctrine\ORM\NonUniqueResultException;
 use Spyck\AutomationBundle\Cron\CronInterface;
 use Spyck\AutomationBundle\Entity\Cron;
+use Spyck\AutomationBundle\Event\PostCronEvent;
+use Spyck\AutomationBundle\Event\PreCronEvent;
 use Spyck\AutomationBundle\Exception\RetryException;
 use DateTime;
 use DateTimeInterface;
@@ -14,17 +17,18 @@ use Psr\Log\LoggerInterface;
 use Spyck\AutomationBundle\Repository\CronRepository;
 use Spyck\AutomationBundle\Utility\DateTimeUtility;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
-use Symfony\Component\ErrorHandler\Error\OutOfMemoryError;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
 
-class CronService
+readonly class CronService
 {
-    public function __construct(private readonly CronRepository $cronRepository, private readonly JobService $jobService, private readonly LoggerInterface $logger, private readonly MapService $mapService, #[Autowire(param: 'spyck.automation.config.cron.retry.delay')] private readonly int $retryDelay, #[Autowire(param: 'spyck.automation.config.cron.retry.multiplier')] private readonly int $retryMultiplier, #[Autowire(param: 'spyck.automation.config.cron.retry.max')] private readonly int $retryMax, #[Autowire(param: 'spyck.automation.config.cron.timeout')] private readonly int $timeout)
+    public function __construct(private CronRepository $cronRepository, private EventDispatcherInterface $eventDispatcher, private JobService $jobService, private LoggerInterface $logger, private MapService $mapService, #[Autowire(param: 'spyck.automation.config.cron.retry.delay')] private int $retryDelay, #[Autowire(param: 'spyck.automation.config.cron.retry.multiplier')] private int $retryMultiplier, #[Autowire(param: 'spyck.automation.config.cron.retry.max')] private int $retryMax, #[Autowire(param: 'spyck.automation.config.cron.timeout')] private int $timeout)
     {
     }
 
     /**
-     * Execute the cron.
+     * @throws Exception
+     * @throws NonUniqueResultException
      */
     public function executeCron(): void
     {
@@ -62,16 +66,28 @@ class CronService
 
             $map = $this->mapService->getMap($cron->getVariables(), $job->getAutomationCronParameter());
 
+            $preCronEvent = new PreCronEvent($job, $map);
+
+            $this->eventDispatcher->dispatch($preCronEvent);
+
             $job->setAutomationCron($cron);
             $job->executeAutomationCron($cron->getCallback(), $map);
 
             $fields = array_merge($fields, ['error', 'timestampAvailable']);
 
-            $status = Cron::STATUS_COMPLETE;
+            $cron = $job->getAutomationCron();
+
+            $duration = $this->getDuration($cron->getTimestamp());
+
+            $this->cronRepository->patchCron(cron: $cron, fields: $fields, status: Cron::STATUS_COMPLETE, duration: $duration, messages: $messages, error: $error, timestampAvailable: $timestampAvailable);
+
+            $postCronEvent = new PostCronEvent($job, $map);
+
+            $this->eventDispatcher->dispatch($postCronEvent);
         } catch (RetryException $exception) {
             $fields = array_merge($fields, ['messages', 'error', 'timestampAvailable']);
 
-            $messages = $this->getMessages($exception, $cron->getMessages());
+            $messages = $this->getMessages($cron->getMessages(), $exception);
 
             $error = null === $cron->getError() ? 1 : $cron->getError() + 1;
 
@@ -86,24 +102,30 @@ class CronService
             } else {
                 $timestampAvailable = new DateTime(sprintf('%d seconds', pow($error, $this->retryMultiplier) * $this->retryDelay));
             }
+
+            $cron = $job->getAutomationCron();
+
+            $duration = $this->getDuration($cron->getTimestamp());
+
+            $this->cronRepository->patchCron(cron: $cron, fields: $fields, status: $status, duration: $duration, messages: $messages, error: $error, timestampAvailable: $timestampAvailable);
         } catch (Throwable $throwable) {
             $fields = array_merge($fields, ['messages']);
 
             $status = Cron::STATUS_ERROR;
-            $messages = $this->getMessages($throwable, $cron->getMessages());
+            $messages = $this->getMessages($cron->getMessages(), $throwable);
 
             $this->logger->error('Cron failed', [
                 'module' => (string) $cron->getModule(),
                 'callback' => $cron->getCallback(),
                 'variables' => $cron->getVariables(),
             ]);
+
+            $cron = $job->getAutomationCron();
+
+            $duration = $this->getDuration($cron->getTimestamp());
+
+            $this->cronRepository->patchCron(cron: $cron, fields: $fields, status: $status, duration: $duration, messages: $messages, error: $error, timestampAvailable: $timestampAvailable);
         }
-
-        $cron = $job->getAutomationCron();
-
-        $duration = $this->getDuration($cron->getTimestamp());
-
-        $this->cronRepository->patchCron(cron: $cron, fields: $fields, status: $status, duration: $duration, messages: $messages, error: $error, timestampAvailable: $timestampAvailable);
     }
 
     public function resetCron(Cron $cron, bool $check = false): void
@@ -129,7 +151,7 @@ class CronService
             if ($date->getTimestamp() - $timestamp->getTimestamp() > $this->timeout) {
                 $duration = $this->getDuration($timestamp);
 
-                $messages = $cron->getMessages();
+                $messages = $cron->getMessages() ?? [];
                 $messages[] = sprintf('Timeout after %s', DateTimeUtility::getDurationAsText($timestamp, $date));
 
                 $this->cronRepository->patchCron(cron: $cron, fields: ['status', 'duration', 'messages'], status: Cron::STATUS_ERROR, duration: $duration, messages: $messages);
@@ -144,9 +166,10 @@ class CronService
         return $dateTimeEnd->getTimestamp() - $dateTimeStart->getTimestamp();
     }
 
-    private function getMessages(Throwable $throwable): array
+    private function getMessages(?array $messages, Throwable $throwable): array
     {
         return [
+            ...$messages ?? [],
             sprintf('%s (%s: %s)', $throwable->getMessage(), $throwable->getFile(), $throwable->getLine()),
             ...explode(PHP_EOL, $throwable->getTraceAsString()),
         ];
