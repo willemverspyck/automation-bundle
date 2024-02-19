@@ -2,15 +2,27 @@
 
 namespace Spyck\AutomationBundle\Parameter;
 
+use DateTime;
 use Symfony\Component\Validator\Constraints as Validator;
 
 final class MonthParameter implements ParameterInterface
 {
     #[Validator\NotNull]
+    #[Validator\Type(type: 'integer')]
     private int $year;
 
     #[Validator\NotNull]
+    #[Validator\Range(min: 1, max: 12)]
+    #[Validator\Type(type: 'integer')]
     private int $month;
+
+    public function __construct()
+    {
+        $date = new DateTime();
+
+        $this->setYear((int) $date->format('Y'));
+        $this->setMonth((int) $date->format('n'));
+    }
 
     public function getYear(): int
     {
