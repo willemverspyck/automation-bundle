@@ -54,7 +54,7 @@ readonly class CronService
 
         $status = null;
         $messages = null;
-        $error = null;
+        $errors = null;
         $timestampAvailable = null;
 
         $job = $this->jobService->getJobByModule($cron->getModule());
@@ -73,25 +73,25 @@ readonly class CronService
             $job->setAutomationCron($cron);
             $job->executeAutomationCron($cron->getCallback(), $map);
 
-            $fields = array_merge($fields, ['error', 'timestampAvailable']);
+            $fields = array_merge($fields, ['errors', 'timestampAvailable']);
 
             $cron = $job->getAutomationCron();
 
             $duration = $this->getDuration($cron->getTimestamp());
 
-            $this->cronRepository->patchCron(cron: $cron, fields: $fields, status: Cron::STATUS_COMPLETE, duration: $duration, messages: $messages, error: $error, timestampAvailable: $timestampAvailable);
+            $this->cronRepository->patchCron(cron: $cron, fields: $fields, status: Cron::STATUS_COMPLETE, duration: $duration, messages: $messages, errors: $errors, timestampAvailable: $timestampAvailable);
 
             $postCronEvent = new PostCronEvent($job, $map);
 
             $this->eventDispatcher->dispatch($postCronEvent);
         } catch (RetryException $exception) {
-            $fields = array_merge($fields, ['messages', 'error', 'timestampAvailable']);
+            $fields = array_merge($fields, ['messages', 'errors', 'timestampAvailable']);
 
             $messages = $this->getMessages($cron->getMessages(), $exception);
 
-            $error = null === $cron->getError() ? 1 : $cron->getError() + 1;
+            $errors = null === $cron->getErrors() ? 1 : $cron->getErrors() + 1;
 
-            if ($error >= $this->retryMax) {
+            if ($errors >= $this->retryMax) {
                 $status = Cron::STATUS_ERROR;
 
                 $this->logger->error('Cron failed', [
@@ -100,14 +100,14 @@ readonly class CronService
                     'variables' => $cron->getVariables(),
                 ]);
             } else {
-                $timestampAvailable = new DateTime(sprintf('%d seconds', pow($error, $this->retryMultiplier) * $this->retryDelay));
+                $timestampAvailable = new DateTime(sprintf('%d seconds', pow($errors, $this->retryMultiplier) * $this->retryDelay));
             }
 
             $cron = $job->getAutomationCron();
 
             $duration = $this->getDuration($cron->getTimestamp());
 
-            $this->cronRepository->patchCron(cron: $cron, fields: $fields, status: $status, duration: $duration, messages: $messages, error: $error, timestampAvailable: $timestampAvailable);
+            $this->cronRepository->patchCron(cron: $cron, fields: $fields, status: $status, duration: $duration, messages: $messages, errors: $errors, timestampAvailable: $timestampAvailable);
         } catch (Throwable $throwable) {
             $fields = array_merge($fields, ['messages']);
 
@@ -124,14 +124,14 @@ readonly class CronService
 
             $duration = $this->getDuration($cron->getTimestamp());
 
-            $this->cronRepository->patchCron(cron: $cron, fields: $fields, status: $status, duration: $duration, messages: $messages, error: $error, timestampAvailable: $timestampAvailable);
+            $this->cronRepository->patchCron(cron: $cron, fields: $fields, status: $status, duration: $duration, messages: $messages, errors: $errors, timestampAvailable: $timestampAvailable);
         }
     }
 
     public function resetCron(Cron $cron, bool $check = false): void
     {
         if (false === $check || Cron::STATUS_ERROR === $cron->getStatus()) {
-            $this->cronRepository->patchCron(cron: $cron, fields: ['status', 'duration', 'messages', 'timestamp']);
+            $this->cronRepository->patchCron(cron: $cron, fields: ['status', 'duration', 'messages', 'errors', 'timestamp', 'timestampAvailable']);
 
             foreach ($cron->getChildren() as $child) {
                 $this->resetCron($child);

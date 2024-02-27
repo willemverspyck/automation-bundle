@@ -60,8 +60,8 @@ class Cron implements Stringable
     #[Doctrine\Column(name: 'messages', type: Types::JSON, nullable: true)]
     private ?array $messages = null;
 
-    #[Doctrine\Column(name: 'error', type: Types::SMALLINT, nullable: true)]
-    private ?int $error = null;
+    #[Doctrine\Column(name: 'errors', type: Types::SMALLINT, nullable: true)]
+    private ?int $errors = null;
 
     #[Doctrine\Column(name: 'timestamp', type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?DateTimeInterface $timestamp = null;
@@ -200,14 +200,14 @@ class Cron implements Stringable
         return $this;
     }
 
-    public function getError(): ?int
+    public function getErrors(): ?int
     {
-        return $this->error;
+        return $this->errors;
     }
 
-    public function setError(?int $error): self
+    public function setErrors(?int $errors): self
     {
-        $this->error = $error;
+        $this->errors = $errors;
 
         return $this;
     }

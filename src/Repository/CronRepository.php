@@ -80,7 +80,7 @@ class CronRepository extends ServiceEntityRepository
         return $cron;
     }
 
-    public function patchCron(Cron $cron, array $fields, Cron $parent = null, ModuleInterface $module = null, string $callback = null, array $variables = null, int $priority = null, string $status = null, int $duration = null, array $messages = null, int $error = null, DateTimeInterface $timestamp = null, DateTimeInterface $timestampAvailable = null): void
+    public function patchCron(Cron $cron, array $fields, Cron $parent = null, ModuleInterface $module = null, string $callback = null, array $variables = null, int $priority = null, string $status = null, int $duration = null, array $messages = null, int $errors = null, DateTimeInterface $timestamp = null, DateTimeInterface $timestampAvailable = null): void
     {
         if (in_array('parent', $fields)) {
             $cron->setParent($parent);
@@ -122,8 +122,8 @@ class CronRepository extends ServiceEntityRepository
             $cron->setMessages($messages);
         }
 
-        if (in_array('error', $fields)) {
-            $cron->setError($error);
+        if (in_array('errors', $fields)) {
+            $cron->setErrors($errors);
         }
 
         if (in_array('timestamp', $fields)) {
