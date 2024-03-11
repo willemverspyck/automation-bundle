@@ -2,24 +2,23 @@
 
 namespace Spyck\AutomationBundle\Parameter;
 
-use DateTime;
-use DateTimeInterface;
+use DateTimeImmutable;
 use Symfony\Component\Validator\Constraints as Validator;
 
 final class DayParameter implements ParameterInterface
 {
     #[Validator\NotNull]
-    #[Validator\Type(type: DateTimeInterface::class)]
-    private DateTimeInterface $date;
+    #[Validator\Type(type: DateTimeImmutable::class)]
+    private DateTimeImmutable $date;
 
     public function __construct()
     {
-        $date = new DateTime();
+        $date = new DateTimeImmutable();
 
         $this->setDate($date);
     }
 
-    public function getDate(): DateTimeInterface
+    public function getDate(): DateTimeImmutable
     {
         return $this->date;
     }
@@ -29,7 +28,7 @@ final class DayParameter implements ParameterInterface
         return $this->getDate()->format('Y-m-d');
     }
 
-    public function setDate(DateTimeInterface $date): static
+    public function setDate(DateTimeImmutable $date): static
     {
         $this->date = $date;
 

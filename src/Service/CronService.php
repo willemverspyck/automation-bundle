@@ -10,8 +10,7 @@ use Spyck\AutomationBundle\Entity\Cron;
 use Spyck\AutomationBundle\Event\PostCronEvent;
 use Spyck\AutomationBundle\Event\PreCronEvent;
 use Spyck\AutomationBundle\Exception\RetryException;
-use DateTime;
-use DateTimeInterface;
+use DateTimeImmutable;
 use Exception;
 use Psr\Log\LoggerInterface;
 use Spyck\AutomationBundle\Repository\CronRepository;
@@ -46,7 +45,7 @@ readonly class CronService
             return;
         }
 
-        $timestamp = new DateTime();
+        $timestamp = new DateTimeImmutable();
 
         $this->cronRepository->patchCron(cron: $cron, fields: ['status', 'duration', 'messages', 'timestamp'], status: Cron::STATUS_PENDING, timestamp: $timestamp);
 
@@ -100,7 +99,7 @@ readonly class CronService
                     'variables' => $cron->getVariables(),
                 ]);
             } else {
-                $timestampAvailable = new DateTime(sprintf('%d seconds', pow($errors, $this->retryMultiplier) * $this->retryDelay));
+                $timestampAvailable = new DateTimeImmutable(sprintf('%d seconds', pow($errors, $this->retryMultiplier) * $this->retryDelay));
             }
 
             $cron = $job->getAutomationCron();
@@ -145,7 +144,7 @@ readonly class CronService
     public function resetCronAfterTimeout(array $crons): void
     {
         foreach ($crons as $cron) {
-            $date = new DateTime();
+            $date = new DateTimeImmutable();
             $timestamp = $cron->getTimestamp();
 
             if ($date->getTimestamp() - $timestamp->getTimestamp() > $this->timeout) {
@@ -159,9 +158,9 @@ readonly class CronService
         }
     }
 
-    private function getDuration(DateTimeInterface $dateTimeStart): int
+    private function getDuration(DateTimeImmutable $dateTimeStart): int
     {
-        $dateTimeEnd = new DateTime();
+        $dateTimeEnd = new DateTimeImmutable();
 
         return $dateTimeEnd->getTimestamp() - $dateTimeStart->getTimestamp();
     }

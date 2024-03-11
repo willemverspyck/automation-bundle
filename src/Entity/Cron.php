@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Spyck\AutomationBundle\Entity;
 
-use DateTimeInterface;
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -63,11 +63,11 @@ class Cron implements Stringable
     #[Doctrine\Column(name: 'errors', type: Types::SMALLINT, nullable: true)]
     private ?int $errors = null;
 
-    #[Doctrine\Column(name: 'timestamp', type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?DateTimeInterface $timestamp = null;
+    #[Doctrine\Column(name: 'timestamp', type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?DateTimeImmutable $timestamp = null;
 
-    #[Doctrine\Column(name: 'timestamp_available', type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?DateTimeInterface $timestampAvailable = null;
+    #[Doctrine\Column(name: 'timestamp_available', type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?DateTimeImmutable $timestampAvailable = null;
 
     public function __construct()
     {
@@ -212,24 +212,24 @@ class Cron implements Stringable
         return $this;
     }
 
-    public function getTimestamp(): ?DateTimeInterface
+    public function getTimestamp(): ?DateTimeImmutable
     {
         return $this->timestamp;
     }
 
-    public function setTimestamp(?DateTimeInterface $timestamp): self
+    public function setTimestamp(?DateTimeImmutable $timestamp): self
     {
         $this->timestamp = $timestamp;
 
         return $this;
     }
 
-    public function getTimestampAvailable(): ?DateTimeInterface
+    public function getTimestampAvailable(): ?DateTimeImmutable
     {
         return $this->timestampAvailable;
     }
 
-    public function setTimestampAvailable(?DateTimeInterface $timestampAvailable): self
+    public function setTimestampAvailable(?DateTimeImmutable $timestampAvailable): self
     {
         $this->timestampAvailable = $timestampAvailable;
 

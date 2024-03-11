@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Spyck\AutomationBundle\Utility;
 
-use DateTimeInterface;
+use DateTimeImmutable;
 
 final class DateTimeUtility
 {
     /**
      * Get the duration between timestamp start and timestamp end.
      */
-    public static function getDurationAsText(DateTimeInterface $start, DateTimeInterface $end): string
+    public static function getDurationAsText(DateTimeImmutable $start, DateTimeImmutable $end): string
     {
         $content = [];
 

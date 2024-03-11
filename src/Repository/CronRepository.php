@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Spyck\AutomationBundle\Repository;
 
-use DateTime;
-use DateTimeInterface;
+use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\Persistence\ManagerRegistry;
@@ -35,7 +34,7 @@ class CronRepository extends ServiceEntityRepository
      */
     public function getCron(): ?Cron
     {
-        $timestampAvailable = new DateTime();
+        $timestampAvailable = new DateTimeImmutable();
 
         return $this->createQueryBuilder('cron')
             ->addSelect('cronParent')
@@ -80,7 +79,7 @@ class CronRepository extends ServiceEntityRepository
         return $cron;
     }
 
-    public function patchCron(Cron $cron, array $fields, Cron $parent = null, ModuleInterface $module = null, string $callback = null, array $variables = null, int $priority = null, string $status = null, int $duration = null, array $messages = null, int $errors = null, DateTimeInterface $timestamp = null, DateTimeInterface $timestampAvailable = null): void
+    public function patchCron(Cron $cron, array $fields, Cron $parent = null, ModuleInterface $module = null, string $callback = null, array $variables = null, int $priority = null, string $status = null, int $duration = null, array $messages = null, int $errors = null, DateTimeImmutable $timestamp = null, DateTimeImmutable $timestampAvailable = null): void
     {
         if (in_array('parent', $fields)) {
             $cron->setParent($parent);

@@ -2,7 +2,7 @@
 
 namespace Spyck\AutomationBundle\Parameter;
 
-use DateTime;
+use DateTimeImmutable;
 use Symfony\Component\Validator\Constraints as Validator;
 
 final class MonthParameter implements ParameterInterface
@@ -18,7 +18,7 @@ final class MonthParameter implements ParameterInterface
 
     public function __construct()
     {
-        $date = new DateTime();
+        $date = new DateTimeImmutable();
 
         $this->setYear((int) $date->format('Y'));
         $this->setMonth((int) $date->format('n'));
