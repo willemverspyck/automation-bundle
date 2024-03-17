@@ -2,9 +2,8 @@
 
 namespace Spyck\AutomationBundle\Job;
 
-use App\Entity\Module;
-use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Spyck\AutomationBundle\Entity\ModuleInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 
 #[Autoconfigure(tags: ['spyck.automation.job'])]
 interface JobInterface

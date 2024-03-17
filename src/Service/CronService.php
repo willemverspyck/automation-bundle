@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Spyck\AutomationBundle\Service;
 
+use DateTimeImmutable;
 use Doctrine\ORM\NonUniqueResultException;
+use Exception;
+use Psr\Log\LoggerInterface;
 use Spyck\AutomationBundle\Cron\CronInterface;
 use Spyck\AutomationBundle\Entity\Cron;
 use Spyck\AutomationBundle\Event\PostCronEvent;
 use Spyck\AutomationBundle\Event\PreCronEvent;
 use Spyck\AutomationBundle\Exception\RetryException;
-use DateTimeImmutable;
-use Exception;
-use Psr\Log\LoggerInterface;
 use Spyck\AutomationBundle\Repository\CronRepository;
 use Spyck\AutomationBundle\Utility\DateTimeUtility;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;

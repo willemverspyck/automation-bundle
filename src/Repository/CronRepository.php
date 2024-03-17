@@ -79,7 +79,7 @@ class CronRepository extends ServiceEntityRepository
         return $cron;
     }
 
-    public function patchCron(Cron $cron, array $fields, Cron $parent = null, ModuleInterface $module = null, string $callback = null, array $variables = null, int $priority = null, string $status = null, int $duration = null, array $messages = null, int $errors = null, DateTimeImmutable $timestamp = null, DateTimeImmutable $timestampAvailable = null): void
+    public function patchCron(Cron $cron, array $fields, ?Cron $parent = null, ?ModuleInterface $module = null, ?string $callback = null, ?array $variables = null, ?int $priority = null, ?string $status = null, ?int $duration = null, ?array $messages = null, ?int $errors = null, ?DateTimeImmutable $timestamp = null, ?DateTimeImmutable $timestampAvailable = null): void
     {
         if (in_array('parent', $fields)) {
             $cron->setParent($parent);

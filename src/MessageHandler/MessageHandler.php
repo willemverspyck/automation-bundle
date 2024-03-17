@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace Spyck\AutomationBundle\MessageHandler;
 
-use Doctrine\ORM\NonUniqueResultException;
 use Exception;
-use Spyck\AutomationBundle\Entity\ModuleInterface;
-use Spyck\AutomationBundle\Job\JobInterface;
 use Spyck\AutomationBundle\Message\MessageInterface;
 use Spyck\AutomationBundle\Message\ModuleMessageInterface;
 use Spyck\AutomationBundle\Repository\ModuleRepository;

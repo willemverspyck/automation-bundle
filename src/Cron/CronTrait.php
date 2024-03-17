@@ -2,7 +2,6 @@
 
 namespace Spyck\AutomationBundle\Cron;
 
-use App\Entity\Module;
 use Exception;
 use Spyck\AutomationBundle\Entity\Cron;
 use Spyck\AutomationBundle\Entity\ModuleInterface;

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Spyck\AutomationBundle\Service;
 
-use Spyck\AutomationBundle\Parameter\DayParameterList;
 use Spyck\AutomationBundle\Parameter\ParameterInterface;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;

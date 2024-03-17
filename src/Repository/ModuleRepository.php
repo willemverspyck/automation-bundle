@@ -6,8 +6,6 @@ namespace Spyck\AutomationBundle\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
-use Doctrine\ORM\Query;
-use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use Spyck\AutomationBundle\Entity\ModuleInterface;

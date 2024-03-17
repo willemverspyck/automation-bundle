@@ -2,9 +2,7 @@
 
 namespace Spyck\AutomationBundle\Message;
 
-use Exception;
 use Spyck\AutomationBundle\Entity\ModuleInterface;
-use Spyck\AutomationBundle\Job\JobInterface;
 use Spyck\AutomationBundle\Parameter\ParameterInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Contracts\Service\Attribute\Required;

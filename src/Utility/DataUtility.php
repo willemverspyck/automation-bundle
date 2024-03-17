@@ -13,7 +13,7 @@ final class DataUtility
      * @throws Exception
      * @throws Throwable
      */
-    public static function assert(bool $condition, Throwable $throwable = null): void
+    public static function assert(bool $condition, ?Throwable $throwable = null): void
     {
         if ($condition) {
             return;
