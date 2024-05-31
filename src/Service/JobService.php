@@ -9,14 +9,14 @@ use Exception;
 use IteratorAggregate;
 use Spyck\AutomationBundle\Entity\ModuleInterface;
 use Spyck\AutomationBundle\Job\JobInterface;
-use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 readonly class JobService
 {
     /**
      * @param Countable&IteratorAggregate $modules
      */
-    public function __construct(#[TaggedIterator(tag: 'spyck.automation.job')] private iterable $modules)
+    public function __construct(#[AutowireIterator(tag: 'spyck.automation.job')] private iterable $modules)
     {
     }
 
