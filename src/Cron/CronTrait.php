@@ -12,7 +12,7 @@ use Symfony\Contracts\Service\Attribute\Required;
 trait CronTrait
 {
     private Cron $cron;
-    private CronRepository $cronRepository;
+    private readonly CronRepository $cronRepository;
 
     #[Required]
     public function setCronRepository(CronRepository $cronRepository): void

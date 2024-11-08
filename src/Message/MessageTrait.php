@@ -9,7 +9,7 @@ use Symfony\Contracts\Service\Attribute\Required;
 
 trait MessageTrait
 {
-    private MessageBusInterface $messageBus;
+    private readonly MessageBusInterface $messageBus;
 
     #[Required]
     public function setMessageBus(MessageBusInterface $messageBus): void
