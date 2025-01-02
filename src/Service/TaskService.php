@@ -4,20 +4,22 @@ declare(strict_types=1);
 
 namespace Spyck\AutomationBundle\Service;
 
-use App\Repository\ModuleRepository;
 use Exception;
-use Psr\Log\LoggerInterface;
 use Spyck\AutomationBundle\Entity\ModuleInterface;
+use Spyck\AutomationBundle\Entity\ScheduleInterface;
 use Spyck\AutomationBundle\Event\PostTaskEvent;
 use Spyck\AutomationBundle\Event\PreTaskEvent;
 use Spyck\AutomationBundle\Exception\ParameterException;
+use Spyck\AutomationBundle\Message\TaskMessage;
+use Spyck\AutomationBundle\Repository\TaskRepository;
 use Spyck\AutomationBundle\Task\TaskInterface;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 readonly class TaskService
 {
-    public function __construct(private EventDispatcherInterface $eventDispatcher, private JobService $jobService, private LoggerInterface $logger, private MapService $mapService, private ModuleRepository $moduleRepository, private ValidatorInterface $validator)
+    public function __construct(private EventDispatcherInterface $eventDispatcher, private JobService $jobService, private MapService $mapService, private MessageBusInterface $messageBus, private TaskRepository $taskRepository, private ValidatorInterface $validator)
     {
         ini_set('memory_limit', '4G');
     }
@@ -25,26 +27,7 @@ readonly class TaskService
     /**
      * @throws Exception
      */
-    public function executeTaskByModuleId(int $moduleId, array $variables = []): void
-    {
-        $module = $this->moduleRepository->getModuleById($moduleId);
-
-        if (null === $module) {
-            $this->logger->error('Module not found', [
-                'moduleId' => $moduleId,
-                'variables' => $variables,
-            ]);
-
-            return;
-        }
-
-        $this->executeTask($module, $variables);
-    }
-
-    /**
-     * @throws Exception
-     */
-    private function executeTask(ModuleInterface $module, array $variables): void
+    public function executeTask(ModuleInterface $module, array $variables): void
     {
         $job = $this->jobService->getJobByModule($module);
 
@@ -73,5 +56,23 @@ readonly class TaskService
         $postCronEvent = new PostTaskEvent($job, $map);
 
         $this->eventDispatcher->dispatch($postCronEvent);
+    }
+
+    public function executeTaskAsMessage(int $id, array $variables = []): void
+    {
+        $taskMessage = new TaskMessage();
+        $taskMessage->setId($id);
+        $taskMessage->setVariables($variables);
+
+        $this->messageBus->dispatch($taskMessage);
+    }
+
+    public function executeTaskAsMessageBySchedule(ScheduleInterface $schedule): void
+    {
+        $tasks = $this->taskRepository->getTasksBySchedule($schedule);
+
+        foreach ($tasks as $task) {
+            $this->executeTaskAsMessage($task->getModule()->getId(), $task->getVariables());
+        }
     }
 }

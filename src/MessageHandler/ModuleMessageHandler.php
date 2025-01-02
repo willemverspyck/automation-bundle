@@ -13,7 +13,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 
 #[AsMessageHandler]
-final class MessageHandler
+final class ModuleMessageHandler
 {
     public function __construct(private readonly JobService $jobService, private readonly ModuleRepository $moduleRepository)
     {
@@ -25,7 +25,7 @@ final class MessageHandler
      */
     public function __invoke(ModuleMessageInterface $moduleMessage): void
     {
-        $id = $moduleMessage->getModule()->getId();
+        $id = $moduleMessage->getId();
 
         $module = $this->moduleRepository->getModuleById($id);
 

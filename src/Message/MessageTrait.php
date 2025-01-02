@@ -20,7 +20,7 @@ trait MessageTrait
     public function putAutomationMessage(ModuleInterface $module, ParameterInterface $parameter, array $stamps = []): void
     {
         $moduleMessage = new ModuleMessage();
-        $moduleMessage->setModule($module);
+        $moduleMessage->setId($module->getId());
         $moduleMessage->setParameter($parameter);
 
         $this->messageBus->dispatch($moduleMessage, $stamps);

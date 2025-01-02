@@ -39,7 +39,6 @@ final class TaskCommand extends Command
     {
         $this
             ->addOption('id', null, InputOption::VALUE_REQUIRED, 'The "id" of the module?')
-            ->addOption('date', null, InputOption::VALUE_REQUIRED, 'Parameter "date"', 'now')
             ->addOption('variableKey', null, InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY, 'Variable key')
             ->addOption('variableValue', null, InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY, 'Variable value');
     }
@@ -76,7 +75,7 @@ final class TaskCommand extends Command
     {
         $style = new SymfonyStyle($input, $output);
 
-        $optionId = (int) $input->getOption('id');
+        $id = (int) $input->getOption('id');
 
         $optionVariableKey = $input->getOption('variableKey');
         $optionVariableValue = $input->getOption('variableValue');
@@ -91,7 +90,7 @@ final class TaskCommand extends Command
 
         $output->writeln('Execute task');
 
-        $this->taskService->executeTaskByModuleId($optionId, $variables);
+        $this->taskService->executeTaskAsMessage($id, $variables);
 
         $output->writeln('Done');
 

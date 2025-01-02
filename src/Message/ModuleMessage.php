@@ -9,17 +9,17 @@ use Spyck\AutomationBundle\Parameter\ParameterInterface;
 
 final class ModuleMessage implements ModuleMessageInterface
 {
-    private ModuleInterface $module;
+    private int $id;
     private ParameterInterface $parameter;
 
-    public function getModule(): ModuleInterface
+    public function getId(): int
     {
-        return $this->module;
+        return $this->id;
     }
 
-    public function setModule(ModuleInterface $module): self
+    public function setId(int $id): self
     {
-        $this->module = $module;
+        $this->id = $id;
 
         return $this;
     }
