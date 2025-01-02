@@ -76,7 +76,7 @@ readonly class CronService
 
             $cron = $job->getAutomationCron();
 
-            $duration = $this->getDuration($cron->getTimestamp());
+            $duration = $this->getDuration($timestamp);
 
             $this->cronRepository->patchCron(cron: $cron, fields: $fields, status: Cron::STATUS_COMPLETE, duration: $duration, messages: $messages, errors: $errors, timestampAvailable: $timestampAvailable);
 
@@ -104,7 +104,7 @@ readonly class CronService
 
             $cron = $job->getAutomationCron();
 
-            $duration = $this->getDuration($cron->getTimestamp());
+            $duration = $this->getDuration($timestamp);
 
             $this->cronRepository->patchCron(cron: $cron, fields: $fields, status: $status, duration: $duration, messages: $messages, errors: $errors, timestampAvailable: $timestampAvailable);
         } catch (Throwable $throwable) {
@@ -121,7 +121,7 @@ readonly class CronService
 
             $cron = $job->getAutomationCron();
 
-            $duration = $this->getDuration($cron->getTimestamp());
+            $duration = $this->getDuration($timestamp);
 
             $this->cronRepository->patchCron(cron: $cron, fields: $fields, status: $status, duration: $duration, messages: $messages, errors: $errors, timestampAvailable: $timestampAvailable);
         }
@@ -144,14 +144,15 @@ readonly class CronService
     public function resetCronAfterTimeout(array $crons): void
     {
         foreach ($crons as $cron) {
-            $date = new DateTimeImmutable();
             $timestamp = $cron->getTimestamp();
 
-            if ($date->getTimestamp() - $timestamp->getTimestamp() > $this->timeout) {
-                $duration = $this->getDuration($timestamp);
+            $duration = $this->getDuration($timestamp);
+
+            if ($duration > $this->timeout) {
+                $interval = new DateInterval(sprintf('PT%dS', $duration));
 
                 $messages = $cron->getMessages() ?? [];
-                $messages[] = sprintf('Timeout after %s', DateTimeUtility::getDurationAsText($timestamp, $date));
+                $messages[] = sprintf('Timeout after %s', DateTimeUtility::getDurationAsText($timestamp, $timestamp->add($interval)));
 
                 $this->cronRepository->patchCron(cron: $cron, fields: ['status', 'duration', 'messages'], status: Cron::STATUS_ERROR, duration: $duration, messages: $messages);
             }
