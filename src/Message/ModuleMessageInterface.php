@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Spyck\AutomationBundle\Message;
 
-use Spyck\AutomationBundle\Entity\ModuleInterface;
 use Spyck\AutomationBundle\Parameter\ParameterInterface;
 
 interface ModuleMessageInterface
