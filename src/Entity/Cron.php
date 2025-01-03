@@ -14,8 +14,10 @@ use Stringable;
 
 #[Doctrine\Entity(repositoryClass: CronRepository::class)]
 #[Doctrine\Table(name: 'automation_cron')]
-class Cron implements Stringable
+class Cron implements Stringable, TimestampInterface
 {
+    use TimestampTrait;
+
     public const STATUS_COMPLETE = 'complete';
     public const STATUS_COMPLETE_NAME = 'Complete';
     public const STATUS_ERROR = 'error';
