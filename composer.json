@@ -23,7 +23,6 @@
     "require": {
         "php": "^8.1",
         "doctrine/collections": "^2",
-        "doctrine/common": "^3",
         "doctrine/doctrine-bundle": "^2",
         "doctrine/orm": "^2|^3",
         "doctrine/persistence": "^3",
