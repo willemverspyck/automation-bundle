@@ -26,7 +26,7 @@ class Task implements Stringable, TimestampInterface
 
     #[Doctrine\ManyToOne(targetEntity: AbstractSchedule::class)]
     #[Doctrine\JoinColumn(name: 'schedule_id', referencedColumnName: 'id', nullable: true)]
-    private ScheduleInterface $schedule;
+    private ?ScheduleInterface $schedule = null;
 
     #[Doctrine\Column(name: 'variables', type: Types::JSON)]
     private array $variables;
