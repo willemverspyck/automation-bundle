@@ -28,6 +28,9 @@ class Task implements Stringable, TimestampInterface
     #[Doctrine\JoinColumn(name: 'schedule_id', referencedColumnName: 'id', nullable: true)]
     private ?ScheduleInterface $schedule = null;
 
+    #[Doctrine\Column(name: 'name', type: Types::STRING, length: 128)]
+    private string $name;
+
     #[Doctrine\Column(name: 'variables', type: Types::JSON)]
     private array $variables;
 
@@ -62,6 +65,18 @@ class Task implements Stringable, TimestampInterface
     public function setSchedule(?ScheduleInterface $schedule): self
     {
         $this->schedule = $schedule;
+
+        return $this;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): self
+    {
+        $this->name = $name;
 
         return $this;
     }
@@ -102,8 +117,15 @@ class Task implements Stringable, TimestampInterface
         return $this;
     }
 
+    public function __clone()
+    {
+        $this->id = null;
+
+        $this->setName(sprintf('%s (Copy)', $this->getName()));
+    }
+
     public function __toString(): string
     {
-        return sprintf('%s', $this->getModule());
+        return $this->getName();
     }
 }
