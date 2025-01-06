@@ -36,7 +36,7 @@ class TaskRepository extends ServiceEntityRepository
     public function getTasksBySchedule(ScheduleInterface $schedule): array
     {
         return $this->createQueryBuilder('task')
-            ->innerJoin('task.schedule', 'schedule', Join::WITH, 'schedule = :schedule')
+            ->innerJoin('task.schedules', 'schedule', Join::WITH, 'schedule = :schedule')
             ->where('task.active = TRUE')
             ->orderBy('task.priority')
             ->setParameter('schedule', $schedule)

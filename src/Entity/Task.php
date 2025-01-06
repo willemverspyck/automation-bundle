@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Spyck\AutomationBundle\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as Doctrine;
 use Spyck\AutomationBundle\Repository\TaskRepository;
@@ -24,10 +26,6 @@ class Task implements Stringable, TimestampInterface
     #[Doctrine\JoinColumn(name: 'module_id', referencedColumnName: 'id', nullable: false)]
     private ModuleInterface $module;
 
-    #[Doctrine\ManyToOne(targetEntity: AbstractSchedule::class)]
-    #[Doctrine\JoinColumn(name: 'schedule_id', referencedColumnName: 'id', nullable: true)]
-    private ?ScheduleInterface $schedule = null;
-
     #[Doctrine\Column(name: 'name', type: Types::STRING, length: 128)]
     private string $name;
 
@@ -39,6 +37,20 @@ class Task implements Stringable, TimestampInterface
 
     #[Doctrine\Column(name: 'active', type: Types::BOOLEAN)]
     private bool $active;
+
+    /**
+     * @var Collection<int, ScheduleInterface>
+     */
+    #[Doctrine\ManyToMany(targetEntity: AbstractSchedule::class)]
+    #[Doctrine\JoinTable(name: 'automation_task_schedule')]
+    #[Doctrine\JoinColumn(name: 'task_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    #[Doctrine\InverseJoinColumn(name: 'schedule_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    private Collection $schedules;
+
+    public function __construct()
+    {
+        $this->schedules = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -53,18 +65,6 @@ class Task implements Stringable, TimestampInterface
     public function setModule(ModuleInterface $module): self
     {
         $this->module = $module;
-
-        return $this;
-    }
-
-    public function getSchedule(): ?ScheduleInterface
-    {
-        return $this->schedule;
-    }
-
-    public function setSchedule(?ScheduleInterface $schedule): self
-    {
-        $this->schedule = $schedule;
 
         return $this;
     }
@@ -115,6 +115,31 @@ class Task implements Stringable, TimestampInterface
         $this->active = $active;
 
         return $this;
+    }
+
+    public function addSchedule(ScheduleInterface $schedule): static
+    {
+        $this->schedules->add($schedule);
+
+        return $this;
+    }
+
+    public function clearSchedules(): void
+    {
+        $this->schedules->clear();
+    }
+
+    /**
+     * @return Collection<int, ScheduleInterface>
+     */
+    public function getSchedules(): Collection
+    {
+        return $this->schedules;
+    }
+
+    public function removeSchedule(ScheduleInterface $schedule): void
+    {
+        $this->schedules->removeElement($schedule);
     }
 
     public function __clone()
