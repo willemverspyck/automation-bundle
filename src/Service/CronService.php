@@ -143,9 +143,6 @@ readonly class CronService
         }
     }
 
-    /**
-     * @param array<int, Cron> $crons
-     */
     public function patchCronForTimeout(Cron $cron): void
     {
         $timestamp = $cron->getTimestamp();
