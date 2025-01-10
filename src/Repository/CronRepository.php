@@ -57,7 +57,7 @@ class CronRepository extends ServiceEntityRepository
      *
      * @return array<int, Cron>
      */
-    public function getCronDataByStatus(string $status): array
+    public function getCronsByStatus(string $status): array
     {
         return $this->findBy([
             'status' => $status,

@@ -101,7 +101,7 @@ final class TaskCommand extends Command
     {
         $data = [];
 
-        $modules = $this->moduleRepository->getModuleData();
+        $modules = $this->moduleRepository->getModules();
 
         foreach ($modules as $module) {
             $data[$module->getId()] = $module->getAdapter();

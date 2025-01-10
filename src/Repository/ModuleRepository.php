@@ -30,7 +30,7 @@ class ModuleRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
-    public function getModuleDataAsQueryBuilder(): QueryBuilder
+    public function getModulesAsQueryBuilder(): QueryBuilder
     {
         return $this->createQueryBuilder('module');
     }
@@ -38,9 +38,9 @@ class ModuleRepository extends ServiceEntityRepository
     /**
      * @return array<int, ModuleInterface>
      */
-    public function getModuleData(): array
+    public function getModules(): array
     {
-        return $this->getModuleDataAsQueryBuilder()
+        return $this->getModulesAsQueryBuilder()
             ->getQuery()
             ->getResult();
     }

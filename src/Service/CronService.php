@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Spyck\AutomationBundle\Service;
 
+use DateInterval;
 use DateTimeImmutable;
 use Doctrine\ORM\NonUniqueResultException;
 use Exception;
@@ -31,10 +32,12 @@ readonly class CronService
      */
     public function executeCron(): void
     {
-        $crons = $this->cronRepository->getCronDataByStatus(Cron::STATUS_PENDING);
+        $crons = $this->cronRepository->getCronsByStatus(Cron::STATUS_PENDING);
 
         if (count($crons) > 0) {
-            $this->resetCronAfterTimeout($crons);
+            foreach ($crons as $cron) {
+                $this->patchCronForTimeout($cron);
+            }
 
             return;
         }
@@ -127,36 +130,38 @@ readonly class CronService
         }
     }
 
-    public function resetCron(Cron $cron, bool $check = false): void
+    public function patchCronForReset(Cron $cron, bool $check = false): void
     {
-        if (false === $check || Cron::STATUS_ERROR === $cron->getStatus()) {
-            $this->cronRepository->patchCron(cron: $cron, fields: ['status', 'duration', 'messages', 'errors', 'timestamp', 'timestampAvailable']);
+        if ($check && Cron::STATUS_ERROR !== $cron->getStatus()) {
+            return;
+        }
 
-            foreach ($cron->getChildren() as $child) {
-                $this->resetCron($child);
-            }
+        $this->cronRepository->patchCron(cron: $cron, fields: ['status', 'duration', 'messages', 'errors', 'timestamp', 'timestampAvailable']);
+
+        foreach ($cron->getChildren() as $child) {
+            $this->patchCronForReset($child);
         }
     }
 
     /**
      * @param array<int, Cron> $crons
      */
-    public function resetCronAfterTimeout(array $crons): void
+    public function patchCronForTimeout(Cron $cron): void
     {
-        foreach ($crons as $cron) {
-            $timestamp = $cron->getTimestamp();
+        $timestamp = $cron->getTimestamp();
 
-            $duration = $this->getDuration($timestamp);
+        $duration = $this->getDuration($timestamp);
 
-            if ($duration > $this->timeout) {
-                $interval = new DateInterval(sprintf('PT%dS', $duration));
-
-                $messages = $cron->getMessages() ?? [];
-                $messages[] = sprintf('Timeout after %s', DateTimeUtility::getDurationAsText($timestamp, $timestamp->add($interval)));
-
-                $this->cronRepository->patchCron(cron: $cron, fields: ['status', 'duration', 'messages'], status: Cron::STATUS_ERROR, duration: $duration, messages: $messages);
-            }
+        if ($duration <= $this->timeout) {
+            return;
         }
+
+        $interval = new DateInterval(sprintf('PT%dS', $duration));
+
+        $messages = $cron->getMessages() ?? [];
+        $messages[] = sprintf('Timeout after %s', DateTimeUtility::getDurationAsText($timestamp, $timestamp->add($interval)));
+
+        $this->cronRepository->patchCron(cron: $cron, fields: ['status', 'duration', 'messages'], status: Cron::STATUS_ERROR, duration: $duration, messages: $messages);
     }
 
     private function getDuration(DateTimeImmutable $dateTimeStart): int
