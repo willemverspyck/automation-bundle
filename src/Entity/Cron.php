@@ -18,12 +18,12 @@ class Cron implements Stringable, TimestampInterface
 {
     use TimestampTrait;
 
-    public const STATUS_COMPLETE = 'complete';
-    public const STATUS_COMPLETE_NAME = 'Complete';
-    public const STATUS_ERROR = 'error';
-    public const STATUS_ERROR_NAME = 'Error';
-    public const STATUS_PENDING = 'pending';
-    public const STATUS_PENDING_NAME = 'Pending';
+    public const string STATUS_COMPLETE = 'complete';
+    public const string STATUS_COMPLETE_NAME = 'Complete';
+    public const string STATUS_ERROR = 'error';
+    public const string STATUS_ERROR_NAME = 'Error';
+    public const string STATUS_PENDING = 'pending';
+    public const string STATUS_PENDING_NAME = 'Pending';
 
     #[Doctrine\Column(name: 'id', type: Types::INTEGER)]
     #[Doctrine\Id]
