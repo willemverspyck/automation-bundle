@@ -6,9 +6,9 @@ namespace Spyck\AutomationBundle\Message;
 
 interface TaskMessageInterface
 {
-    public function getId(): int;
+    public function getModuleId(): int;
 
-    public function setId(int $id): self;
+    public function setModuleId(int $moduleId): self;
 
     public function getVariables(): array;
 

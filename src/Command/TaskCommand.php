@@ -28,7 +28,7 @@ final class TaskCommand extends Command
 
     public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
     {
-        if ($input->mustSuggestOptionValuesFor('id')) {
+        if ($input->mustSuggestOptionValuesFor('moduleId')) {
             $data = $this->getModules();
 
             $suggestions->suggestValues(array_keys($data));
@@ -38,16 +38,16 @@ final class TaskCommand extends Command
     protected function configure(): void
     {
         $this
-            ->addOption('id', null, InputOption::VALUE_REQUIRED, 'The "id" of the module?')
+            ->addOption('moduleId', null, InputOption::VALUE_REQUIRED, 'The "id" of the module?')
             ->addOption('variableKey', null, InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY, 'Variable key')
             ->addOption('variableValue', null, InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY, 'Variable value');
     }
 
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        $id = $input->getOption('id');
+        $moduleId = $input->getOption('moduleId');
 
-        if (null !== $id) {
+        if (null !== $moduleId) {
             return;
         }
 
@@ -65,7 +65,7 @@ final class TaskCommand extends Command
 
         $answer = $this->getHelper('question')->ask($input, $output, $question);
 
-        $input->setOption('id', $answer);
+        $input->setOption('moduleId', $answer);
     }
 
     /**
@@ -75,22 +75,21 @@ final class TaskCommand extends Command
     {
         $style = new SymfonyStyle($input, $output);
 
-        $id = (int) $input->getOption('id');
+        $moduleId = (int) $input->getOption('moduleId');
+        $variableKeys = $input->getOption('variableKey');
+        $variableValues = $input->getOption('variableValue');
 
-        $optionVariableKey = $input->getOption('variableKey');
-        $optionVariableValue = $input->getOption('variableValue');
-
-        if (count($optionVariableKey) !== count($optionVariableValue)) {
+        if (count($variableKeys) !== count($variableValues)) {
             $style->error('Parameter "variableKey" and "variableValue" must be equal.');
 
             return Command::FAILURE;
         }
 
-        $variables = array_combine($optionVariableKey, $optionVariableValue);
+        $variables = array_combine($variableKeys, $variableValues);
 
         $output->writeln('Execute task');
 
-        $this->taskService->executeTaskAsMessage($id, $variables);
+        $this->taskService->executeTaskAsMessage($moduleId, $variables);
 
         $output->writeln('Done');
 

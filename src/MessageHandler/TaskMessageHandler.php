@@ -25,12 +25,12 @@ final class TaskMessageHandler
      */
     public function __invoke(TaskMessageInterface $taskMessage): void
     {
-        $id = $taskMessage->getId();
+        $moduleId = $taskMessage->getModuleId();
 
-        $module = $this->moduleRepository->getModuleById($id);
+        $module = $this->moduleRepository->getModuleById($moduleId);
 
         if (null === $module) {
-            throw new UnrecoverableMessageHandlingException(sprintf('Module "%s" not found', $id));
+            throw new UnrecoverableMessageHandlingException(sprintf('Module "%s" not found', $moduleId));
         }
 
         $this->taskService->executeTask($module, $taskMessage->getVariables());

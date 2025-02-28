@@ -6,17 +6,17 @@ namespace Spyck\AutomationBundle\Message;
 
 final class TaskMessage implements TaskMessageInterface
 {
-    private int $id;
+    private int $moduleId;
     private array $variables;
 
-    public function getId(): int
+    public function getModuleId(): int
     {
-        return $this->id;
+        return $this->moduleId;
     }
 
-    public function setId(int $id): self
+    public function setModuleId(int $moduleId): self
     {
-        $this->id = $id;
+        $this->moduleId = $moduleId;
 
         return $this;
     }

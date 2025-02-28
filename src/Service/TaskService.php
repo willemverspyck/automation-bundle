@@ -58,10 +58,10 @@ readonly class TaskService
         $this->eventDispatcher->dispatch($postCronEvent);
     }
 
-    public function executeTaskAsMessage(int $id, array $variables = []): void
+    public function executeTaskAsMessage(int $moduleId, array $variables = []): void
     {
         $taskMessage = new TaskMessage();
-        $taskMessage->setId($id);
+        $taskMessage->setModuleId($moduleId);
         $taskMessage->setVariables($variables);
 
         $this->messageBus->dispatch($taskMessage);
