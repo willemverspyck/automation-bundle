@@ -12,7 +12,7 @@ use Spyck\AutomationBundle\Service\JobService;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 
-#[AsMessageHandler]
+#[AsMessageHandler(sign: true)]
 final class ModuleMessageHandler
 {
     public function __construct(private readonly JobService $jobService, private readonly ModuleRepository $moduleRepository)

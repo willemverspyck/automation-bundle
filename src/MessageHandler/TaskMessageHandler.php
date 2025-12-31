@@ -12,7 +12,7 @@ use Spyck\AutomationBundle\Service\TaskService;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 
-#[AsMessageHandler]
+#[AsMessageHandler(sign: true)]
 final class TaskMessageHandler
 {
     public function __construct(private readonly ModuleRepository $moduleRepository, private readonly TaskRepository $taskRepository, private readonly TaskService $taskService)
