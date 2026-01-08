@@ -4,19 +4,15 @@ declare(strict_types=1);
 
 namespace Spyck\AutomationBundle\Service;
 
-use Countable;
 use Exception;
-use IteratorAggregate;
 use Spyck\AutomationBundle\Entity\ModuleInterface;
 use Spyck\AutomationBundle\Job\JobInterface;
-use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
+use Symfony\Component\DependencyInjection\Attribute\AutowireLocator;
+use Symfony\Component\DependencyInjection\ServiceLocator;
 
 readonly class JobService
 {
-    /**
-     * @param Countable&IteratorAggregate $modules
-     */
-    public function __construct(#[AutowireIterator(tag: 'spyck.automation.job')] private iterable $modules)
+    public function __construct(#[AutowireLocator(services: 'spyck.automation.job', defaultIndexMethod: 'getIndexName')] private ServiceLocator $serviceLocator)
     {
     }
 
@@ -32,18 +28,9 @@ readonly class JobService
 
         return $job;
     }
-
-    /**
-     * @throws Exception
-     */
+    
     private function getJob(string $name): JobInterface
     {
-        foreach ($this->modules->getIterator() as $module) {
-            if (get_class($module) === $name) {
-                return $module;
-            }
-        }
-
-        throw new Exception(sprintf('Module "%s" not found', $name));
+        return $this->serviceLocator->get($name);
     }
 }

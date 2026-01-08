@@ -8,6 +8,11 @@ trait JobTrait
 {
     private ModuleInterface $module;
 
+    public static function getIndexName(): string
+    {
+        return static::class;
+    }
+
     public function setAutomationModule(ModuleInterface $module): void
     {
         $this->module = $module;
