@@ -19,21 +19,21 @@ final class CronCommand
     {
     }
 
-    public function __invoke(SymfonyStyle $symfonyStyle): int
+    public function __invoke(SymfonyStyle $style): int
     {
         if (false === $this->lock()) {
-            $symfonyStyle->writeln('The command is already running in another process');
+            $style->error('The command is already running in another process');
 
             return Command::SUCCESS;
         }
 
-        $symfonyStyle->writeln('Looking for crons to execute...');
+        $style->info('Looking for crons to execute...');
 
         $this->cronService->executeCron();
 
-        $symfonyStyle->writeln('Done');
-
         $this->release();
+
+        $style->success('Done');
 
         return Command::SUCCESS;
     }

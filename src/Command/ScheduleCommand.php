@@ -24,11 +24,11 @@ final class ScheduleCommand
     /**
      * @throws Exception
      */
-    public function __invoke(SymfonyStyle $symfonyStyle): int
+    public function __invoke(SymfonyStyle $style): int
     {
-        $date = new DateTimeImmutable();
+        $style->info('Looking for schedules to execute...');
 
-        $symfonyStyle->writeln('Looking for schedules to execute...');
+        $date = new DateTimeImmutable();
 
         $schedules = $this->scheduleRepository->getSchedules(ScheduleForSystem::class);
 
@@ -38,7 +38,7 @@ final class ScheduleCommand
             $this->eventDispatcher->dispatch($scheduleEvent);
         }
 
-        $symfonyStyle->writeln('Done');
+        $style->success('Done');
 
         return Command::SUCCESS;
     }
