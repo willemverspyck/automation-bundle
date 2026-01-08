@@ -16,6 +16,11 @@ readonly class JobService
     {
     }
 
+    public function getJob(string $name): JobInterface
+    {
+        return $this->serviceLocator->get($name);
+    }
+
     /**
      * @throws Exception
      */
@@ -27,10 +32,5 @@ readonly class JobService
         $job->setAutomationModule($module);
 
         return $job;
-    }
-    
-    private function getJob(string $name): JobInterface
-    {
-        return $this->serviceLocator->get($name);
     }
 }
