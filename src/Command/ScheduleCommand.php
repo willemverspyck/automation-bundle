@@ -11,24 +11,24 @@ use Spyck\AutomationBundle\Event\ScheduleEvent;
 use Spyck\AutomationBundle\Repository\ScheduleRepository;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 #[AsCommand(name: 'spyck:automation:schedule', description: 'Command for schedule events.')]
-final class ScheduleCommand extends Command
+final class ScheduleCommand
 {
     public function __construct(private readonly EventDispatcherInterface $eventDispatcher, private readonly ScheduleRepository $scheduleRepository)
     {
-        parent::__construct();
     }
 
     /**
      * @throws Exception
      */
-    protected function execute(InputInterface $input, OutputInterface $output): int
+    public function __invoke(SymfonyStyle $symfonyStyle): int
     {
         $date = new DateTimeImmutable();
+
+        $symfonyStyle->writeln('Looking for schedules to execute...');
 
         $schedules = $this->scheduleRepository->getSchedules(ScheduleForSystem::class);
 
@@ -37,6 +37,8 @@ final class ScheduleCommand extends Command
 
             $this->eventDispatcher->dispatch($scheduleEvent);
         }
+
+        $symfonyStyle->writeln('Done');
 
         return Command::SUCCESS;
     }
