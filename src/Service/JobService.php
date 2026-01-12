@@ -28,6 +28,10 @@ readonly class JobService
     {
         $adapter = $module->getAdapter();
 
+        if (null === $adapter) {
+            throw new Exception(sprintf('Module "%s" has no adapter', $module->getName()));
+        }
+
         $job = $this->getJob($adapter);
         $job->setAutomationModule($module);
 
