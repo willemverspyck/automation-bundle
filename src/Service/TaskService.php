@@ -58,10 +58,10 @@ readonly class TaskService
         $this->eventDispatcher->dispatch($postCronEvent);
     }
 
-    public function executeTaskAsMessage(int $moduleId, array $variables = []): void
+    public function executeTaskAsMessage(ModuleInterface $module, array $variables = []): void
     {
         $taskMessage = new TaskMessage();
-        $taskMessage->setModuleId($moduleId);
+        $taskMessage->setModuleId($module->getId());
         $taskMessage->setVariables($variables);
 
         $this->messageBus->dispatch($taskMessage);
@@ -72,7 +72,7 @@ readonly class TaskService
         $tasks = $this->taskRepository->getTasksBySchedule($schedule);
 
         foreach ($tasks as $task) {
-            $this->executeTaskAsMessage($task->getModule()->getId(), $task->getVariables());
+            $this->executeTaskAsMessage($task->getModule(), $task->getVariables());
         }
     }
 }
