@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Spyck\AutomationBundle\Job;
 
 use Spyck\AutomationBundle\Entity\ModuleInterface;
@@ -7,11 +9,6 @@ use Spyck\AutomationBundle\Entity\ModuleInterface;
 trait JobTrait
 {
     private ModuleInterface $module;
-
-    public static function getIndexName(): string
-    {
-        return static::class;
-    }
 
     public function setAutomationModule(ModuleInterface $module): void
     {

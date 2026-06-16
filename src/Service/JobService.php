@@ -12,7 +12,7 @@ use Symfony\Component\DependencyInjection\ServiceLocator;
 
 readonly class JobService
 {
-    public function __construct(#[AutowireLocator(services: 'spyck.automation.job', defaultIndexMethod: 'getIndexName')] private ServiceLocator $serviceLocator)
+    public function __construct(#[AutowireLocator(services: 'spyck.automation.job')] private ServiceLocator $serviceLocator)
     {
     }
 
