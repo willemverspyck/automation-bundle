@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Spyck\AutomationBundle\Task;
 
 use Spyck\AutomationBundle\Job\JobInterface;
