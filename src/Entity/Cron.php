@@ -238,7 +238,7 @@ class Cron implements Stringable, TimestampInterface
         return $this;
     }
 
-    public static function getStatusData(bool $inverse = false): array
+    public static function getStatuses(bool $inverse = false): array
     {
         $data = [
             self::STATUS_ERROR => self::STATUS_ERROR_NAME,
